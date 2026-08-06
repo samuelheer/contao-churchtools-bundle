@@ -1,0 +1,22 @@
+{% extends '@Contao/content_element/_base.html.twig' %}
+{% use '@Contao/component/_figure.html.twig' %}
+
+{# Flyerreihe der nächsten Termine. Ein Flyer verschwindet von selbst, sobald
+   sein Termin vorbei ist - es gibt keinen Anzeigezeitraum mehr zu pflegen. #}
+{% block content %}
+    {% if flyers is not empty %}
+        <div class="ct-flyers">
+            {% for flyer in flyers %}
+                <div class="ct-flyer">
+                    <a
+                        href="{{ flyer.href }}"
+                        {% if flyer.external %}target="_blank" rel="noreferrer noopener"{% endif %}
+                        title="{{ flyer.title }}"
+                    >
+                        {% with {figure: flyer.figure} %}{{ block('figure_component') }}{% endwith %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

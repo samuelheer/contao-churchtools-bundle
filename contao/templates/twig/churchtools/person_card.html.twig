@@ -1,0 +1,22 @@
+{# Personen als Karte: Bild, Name, Funktion. #}
+<div class="ct-people ct-people--card">
+    {% for person in people %}
+        <figure class="ct-person ct-person--card">
+            {% if person.imageUrl %}
+                <img
+                    class="ct-person__image"
+                    src="{{ person.imageUrl }}"
+                    alt="{{ person.fullName }}"
+                    width="300"
+                    loading="lazy"
+                >
+            {% endif %}
+            <figcaption class="ct-person__body">
+                <span class="ct-person__name">{{ person.fullName }}</span>
+                {% if person.job %}
+                    <span class="ct-person__job">{{ person.job }}</span>
+                {% endif %}
+            </figcaption>
+        </figure>
+    {% endfor %}
+</div>

@@ -1,0 +1,33 @@
+{# Ansprechpartner mit Kontaktweg.
+   E-Mail und Telefon erscheinen nur, wenn sie an der Verbindung freigegeben sind -
+   sonst fehlen die Felder bereits in den Daten. Die Adresse wird verschleiert
+   ausgegeben, damit sie nicht abgegriffen wird. #}
+<div class="ct-people ct-people--contact">
+    {% for person in people %}
+        <div class="ct-person ct-person--contact">
+            {% if person.imageUrl %}
+                <img
+                    class="ct-person__image"
+                    src="{{ person.imageUrl }}"
+                    alt="{{ person.fullName }}"
+                    width="300"
+                    loading="lazy"
+                >
+            {% endif %}
+            <div class="ct-person__body">
+                <p class="ct-person__name">{{ person.fullName }}</p>
+                {% if person.job %}
+                    <p class="ct-person__job">{{ person.job }}</p>
+                {% endif %}
+                {% if person.email %}
+                    <p class="ct-person__email">{{ person.email|encode_email }}</p>
+                {% endif %}
+                {% if person.mobile %}
+                    <p class="ct-person__phone">
+                        <a href="tel:{{ person.mobile|replace({' ': '', '/': '', '-': ''}) }}">{{ person.mobile }}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

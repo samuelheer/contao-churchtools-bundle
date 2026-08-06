@@ -1,0 +1,11 @@
+contao_churchtools_avatar:
+    path: /_churchtools/avatar/{connection}/{personId}/{size}
+    defaults:
+        _controller: SamuelHeer\ContaoChurchToolsBundle\Controller\AvatarController
+        _scope: frontend
+        size: medium
+    requirements:
+        connection: '\d+'
+        personId: '\d+'
+        size: 'small|medium|large'
+    methods: [GET]

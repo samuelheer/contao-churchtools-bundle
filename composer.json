@@ -1,0 +1,52 @@
+{
+    "name": "samuelheer/contao-churchtools-bundle",
+    "type": "contao-bundle",
+    "description": "ChurchTools-Integration für Contao: Termine samt Flyer und Personen aus ChurchTools auf der Website, mandantenfähig für mehrere Gemeinden in einer Installation.",
+    "keywords": ["contao", "churchtools", "church", "calendar", "events"],
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Samuel Heer",
+            "homepage": "https://github.com/samuelheer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "contao/core-bundle": "^5.7",
+        "contao/calendar-bundle": "^5.7",
+        "symfony/http-client": "^6.4 || ^7.0",
+        "symfony/cache": "^6.4 || ^7.0",
+        "symfony/messenger": "^6.4 || ^7.0"
+    },
+    "require-dev": {
+        "contao/manager-plugin": "^2.0",
+        "phpunit/phpunit": "^10.5"
+    },
+    "conflict": {
+        "contao/manager-plugin": "<2.0 || >=3.0"
+    },
+    "extra": {
+        "contao-manager-plugin": "SamuelHeer\\ContaoChurchToolsBundle\\ContaoManager\\Plugin"
+    },
+    "autoload": {
+        "psr-4": {
+            "SamuelHeer\\ContaoChurchToolsBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SamuelHeer\\ContaoChurchToolsBundle\\Tests\\": "tests/"
+        }
+    },
+    "support": {
+        "issues": "https://github.com/samuelheer/contao-churchtools-bundle/issues",
+        "source": "https://github.com/samuelheer/contao-churchtools-bundle"
+    },
+    "config": {
+        "allow-plugins": {
+            "contao-components/installer": true,
+            "contao/manager-plugin": true,
+            "php-http/discovery": true
+        }
+    }
+}

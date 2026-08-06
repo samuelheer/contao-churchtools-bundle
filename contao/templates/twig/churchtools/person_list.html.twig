@@ -1,0 +1,20 @@
+{# Mehrere Personen nebeneinander, etwa ein Team oder eine Gruppenleitung. #}
+<ul class="ct-people ct-people--list">
+    {% for person in people %}
+        <li class="ct-person ct-person--list">
+            {% if person.imageUrl %}
+                <img
+                    class="ct-person__image"
+                    src="{{ person.imageUrl }}"
+                    alt="{{ person.fullName }}"
+                    width="100"
+                    loading="lazy"
+                >
+            {% endif %}
+            <span class="ct-person__name">{{ person.fullName }}</span>
+            {% if person.job %}
+                <span class="ct-person__job">{{ person.job }}</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>

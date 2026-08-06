@@ -1,0 +1,5 @@
+{# Person im Fließtext: nur der Name, kein Umbruch. #}
+{%- for person in people -%}
+    {%- if not loop.first %}, {% endif -%}
+    <span class="ct-person ct-person--inline">{{ person.fullName }}</span>
+{%- endfor -%}

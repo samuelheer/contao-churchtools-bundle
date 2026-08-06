@@ -1,0 +1,7 @@
+{% extends '@Contao/content_element/_base.html.twig' %}
+
+{% block content %}
+    {% if people is not empty %}
+        {% include '@Contao/churchtools/person_' ~ variant ~ '.html.twig' with {people} only %}
+    {% endif %}
+{% endblock %}

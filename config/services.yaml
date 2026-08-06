@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            # Der taggable Pool wird in der Extension per prepend angelegt.
+            Symfony\Component\Cache\Adapter\TagAwareAdapterInterface $cache: '@contao_churchtools.cache'
+            string $projectDir: '%kernel.project_dir%'
+
+    SamuelHeer\ContaoChurchToolsBundle\:
+        resource: ../src/
+        exclude:
+            - ../src/ContaoChurchToolsBundle.php
+            - ../src/ContaoManager/
+            - ../src/DependencyInjection/
+            - ../src/ChurchTools/Dto/
+            - ../src/Exception/
+            - ../src/Connection/Connection.php
+            - ../src/Sync/SyncReport.php
+
+    # Wird über die Route per FQCN angesprochen und braucht deshalb den Controller-Tag.
+    SamuelHeer\ContaoChurchToolsBundle\Controller\AvatarController:
+        tags: ['controller.service_arguments']
