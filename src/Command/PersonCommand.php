@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace SamuelHeer\ContaoChurchToolsBundle\Command;
 
+use SamuelHeer\ContaoChurchToolsBundle\ChurchTools\ChurchToolsClient;
 use SamuelHeer\ContaoChurchToolsBundle\Connection\ConnectionRegistry;
 use SamuelHeer\ContaoChurchToolsBundle\Person\GroupRoleResolver;
 use SamuelHeer\ContaoChurchToolsBundle\Person\PersonProvider;
@@ -37,6 +38,7 @@ class PersonCommand extends Command
         private readonly ConnectionRegistry $registry,
         private readonly PersonProvider $personProvider,
         private readonly GroupRoleResolver $groupRoleResolver,
+        private readonly ChurchToolsClient $client,
     ) {
         parent::__construct();
     }
@@ -46,6 +48,7 @@ class PersonCommand extends Command
         $this
             ->addArgument('personId', InputArgument::OPTIONAL, 'ID der Person in ChurchTools')
             ->addOption('connection', 'c', InputOption::VALUE_REQUIRED, 'ID der Verbindung (ohne Angabe: die einzige vorhandene)')
+            ->addOption('search', 's', InputOption::VALUE_REQUIRED, 'Nach einem Namen suchen (wie das Backend-Auswahlfeld)')
             ->addOption('group', 'g', InputOption::VALUE_REQUIRED, 'Stattdessen eine Gruppe auflösen')
             ->addOption('role', 'r', InputOption::VALUE_REQUIRED, 'Auf eine Rolle eingrenzen')
         ;
@@ -76,6 +79,31 @@ class PersonCommand extends Command
         $io->writeln('  Freigabegruppe: '.($connection->hasPersonRelease() ? (string) $connection->publicPersonGroupId : 'keine - es wird niemand ausgeliefert'));
         $io->writeln('  Freigegebene Felder: '.implode(', ', $connection->personFields));
         $io->newLine();
+
+        if ($query = (string) ($input->getOption('search') ?? '')) {
+            $hits = $this->client->searchPersons($connection, $query);
+
+            if ([] === $hits) {
+                $io->warning('Keine Treffer.');
+
+                return Command::SUCCESS;
+            }
+
+            $released = $this->personProvider->releasedIds($connection);
+            $rows = [];
+
+            foreach ($hits as $hit) {
+                $rows[] = [
+                    $hit['id'],
+                    $hit['name'],
+                    \in_array($hit['id'], $released, true) ? 'ja' : 'nein',
+                ];
+            }
+
+            $io->table(['ID', 'Name', 'freigegeben'], $rows);
+
+            return Command::SUCCESS;
+        }
 
         if ($groupId = (int) ($input->getOption('group') ?? 0)) {
             $roleId = (int) ($input->getOption('role') ?? 0) ?: null;

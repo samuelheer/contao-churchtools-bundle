@@ -51,7 +51,7 @@ class AppointmentSync
     /**
      * Synchronisiert alle Contao-Kalender, die einer Verbindung zugeordnet sind.
      */
-    public function syncAll(bool $dryRun = false, \DateTimeImmutable|null $from = null, \DateTimeImmutable|null $to = null): SyncReport
+    public function syncAll(bool $dryRun = false, \DateTimeImmutable|null $from = null, \DateTimeImmutable|null $to = null, bool $respectInterval = false): SyncReport
     {
         $this->framework->initialize();
 
@@ -67,9 +67,19 @@ class AppointmentSync
                 continue;
             }
 
+            if ($respectInterval && !$this->isDue($calendar)) {
+                continue;
+            }
+
             // Ein Fehler darf nur seinen eigenen Mandanten treffen.
             try {
-                $report->merge($this->syncCalendar($calendar, $dryRun, $from, $to));
+                $calendarReport = $this->syncCalendar($calendar, $dryRun, $from, $to);
+                $report->merge($calendarReport);
+
+                if (!$dryRun && [] === $calendarReport->errors) {
+                    $calendar->churchtoolsLastSync = time();
+                    $calendar->save();
+                }
             } catch (ChurchToolsException $e) {
                 $report->error(\sprintf('Kalender "%s": %s', $calendar->title, $e->getMessage()));
                 $this->logger?->error('ChurchTools-Sync fehlgeschlagen', ['calendar' => $calendar->title]);
@@ -152,6 +162,32 @@ class AppointmentSync
         }
 
         return $report;
+    }
+
+    /**
+     * Ist der Kalender laut seinem Intervall fällig?
+     *
+     * „manual" bedeutet: nur auf Knopfdruck oder über die Konsole, nie per Cron.
+     */
+    private function isDue(CalendarModel $calendar): bool
+    {
+        $interval = (string) ($calendar->churchtoolsSyncInterval ?: 'hourly');
+
+        if ('manual' === $interval) {
+            return false;
+        }
+
+        $last = (int) $calendar->churchtoolsLastSync;
+
+        if ($last < 1) {
+            return true;
+        }
+
+        $minimumAge = 'daily' === $interval ? 86400 : 3600;
+
+        // Etwas Toleranz, damit ein Cron, der ein paar Sekunden zu früh kommt,
+        // den Lauf nicht bis zum nächsten Durchgang verschiebt.
+        return (time() - $last) >= ($minimumAge - 60);
     }
 
     /**

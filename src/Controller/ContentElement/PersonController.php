@@ -43,7 +43,9 @@ class PersonController extends AbstractContentElementController
 
     protected function getResponse(FragmentTemplate $template, ContentModel $model, Request $request): Response
     {
-        $connection = $this->resolveConnection($model);
+        // Die Verbindung kommt ausschließlich von der Startseite dieser Website.
+        // Am Element ist sie bewusst nicht wählbar - siehe tl_content.php.
+        $connection = $this->registry->forCurrentRootPage();
 
         if (null === $connection) {
             $template->set('people', []);
@@ -72,13 +74,6 @@ class PersonController extends AbstractContentElementController
         $template->set('headline', $model->headline);
 
         return $template->getResponse();
-    }
-
-    private function resolveConnection(ContentModel $model): Connection|null
-    {
-        // Am Element gesetzt schlägt die Startseite - sonst gilt der Kontext der Website.
-        return $this->registry->find((int) $model->churchtoolsConnection)
-            ?? $this->registry->forCurrentRootPage();
     }
 
     /**

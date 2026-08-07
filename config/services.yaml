@@ -18,6 +18,17 @@ services:
             - ../src/Connection/Connection.php
             - ../src/Sync/SyncReport.php
 
-    # Wird über die Route per FQCN angesprochen und braucht deshalb den Controller-Tag.
+    # Werden über die Route per FQCN angesprochen und brauchen deshalb den Controller-Tag.
     SamuelHeer\ContaoChurchToolsBundle\Controller\AvatarController:
         tags: ['controller.service_arguments']
+
+    SamuelHeer\ContaoChurchToolsBundle\Controller\PersonSearchController:
+        tags: ['controller.service_arguments']
+
+    # Contao erzeugt Widgets nicht über den Container - diese beiden werden
+    # deshalb im PersonPickerWidget über System::getContainer() geholt.
+    SamuelHeer\ContaoChurchToolsBundle\Connection\ConnectionRegistry:
+        public: true
+
+    SamuelHeer\ContaoChurchToolsBundle\Person\PersonProvider:
+        public: true

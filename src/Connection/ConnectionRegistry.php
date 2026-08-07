@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace SamuelHeer\ContaoChurchToolsBundle\Connection;
 
+use Contao\ArticleModel;
+use Contao\ContentModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -96,9 +98,49 @@ class ConnectionRegistry
             return null;
         }
 
-        $pageModel->loadDetails();
+        return $this->forPage($pageModel);
+    }
 
-        return $this->find((int) ($pageModel->churchtoolsConnection ?? 0));
+    /**
+     * Die Verbindung, die für eine bestimmte Seite gilt - über deren Startseite.
+     */
+    public function forPage(PageModel|null $page): Connection|null
+    {
+        if (null === $page) {
+            return null;
+        }
+
+        $page->loadDetails();
+
+        // rootId zeigt auf die Startseite des Baums; dort hängt die Verbindung.
+        $root = PageModel::findByPk($page->rootId) ?? $page;
+
+        return $this->find((int) ($root->churchtoolsConnection ?? 0));
+    }
+
+    /**
+     * Die Verbindung eines Inhaltselements - im Backend gibt es keine Seite im
+     * Request, deshalb über Artikel und Seite des Elements aufgelöst.
+     */
+    public function forContentElement(int $contentId): Connection|null
+    {
+        if ($contentId < 1) {
+            return null;
+        }
+
+        $content = ContentModel::findByPk($contentId);
+
+        if (null === $content || 'tl_article' !== ($content->ptable ?: 'tl_article')) {
+            return null;
+        }
+
+        $article = ArticleModel::findByPk($content->pid);
+
+        if (null === $article) {
+            return null;
+        }
+
+        return $this->forPage(PageModel::findByPk($article->pid));
     }
 
     /**

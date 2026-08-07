@@ -10,11 +10,18 @@ declare(strict_types=1);
 
 namespace SamuelHeer\ContaoChurchToolsBundle\EventListener;
 
+use Contao\CalendarModel;
+use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\DataContainer;
+use Contao\Environment;
+use Contao\Input;
+use Contao\Message;
 use SamuelHeer\ContaoChurchToolsBundle\ChurchTools\ChurchToolsClient;
 use SamuelHeer\ContaoChurchToolsBundle\Connection\ConnectionRegistry;
 use SamuelHeer\ContaoChurchToolsBundle\Exception\ChurchToolsException;
+use SamuelHeer\ContaoChurchToolsBundle\Sync\AppointmentSync;
 
 /**
  * Auswahlfelder für die Kalender- und Verbindungszuordnung.
@@ -26,7 +33,58 @@ class CalendarDcaListener
     public function __construct(
         private readonly ConnectionRegistry $registry,
         private readonly ChurchToolsClient $client,
+        private readonly AppointmentSync $sync,
+        private readonly ContaoFramework $framework,
     ) {
+    }
+
+    /**
+     * Führt den Abgleich eines einzelnen Kalenders auf Knopfdruck aus.
+     *
+     * Contao ruft diesen Callback bei jedem Laden der Kalenderliste auf; gehandelt
+     * wird nur, wenn tatsächlich die Schaltfläche gedrückt wurde.
+     */
+    #[AsCallback(table: 'tl_calendar', target: 'config.onload')]
+    public function handleSyncRequest(DataContainer|null $dc = null): void
+    {
+        if ('churchtoolsSync' !== Input::get('key')) {
+            return;
+        }
+
+        $this->framework->initialize();
+
+        $calendar = CalendarModel::findByPk(Input::get('id'));
+
+        if (null === $calendar || !$calendar->churchtoolsConnection) {
+            Message::addError('Dieser Kalender ist keiner ChurchTools-Verbindung zugeordnet.');
+            $this->redirectBack();
+        }
+
+        try {
+            $report = $this->sync->syncCalendar($calendar);
+        } catch (ChurchToolsException $e) {
+            Message::addError('Abgleich fehlgeschlagen: '.$e->getMessage());
+            $this->redirectBack();
+
+            return;
+        }
+
+        foreach ($report->errors as $error) {
+            Message::addError($error);
+        }
+
+        if ([] === $report->errors) {
+            $calendar->churchtoolsLastSync = time();
+            $calendar->save();
+            Message::addConfirmation('Abgleich abgeschlossen: '.$report->summary());
+        }
+
+        $this->redirectBack();
+    }
+
+    private function redirectBack(): never
+    {
+        Controller::redirect(str_replace(['&key=churchtoolsSync', '&id='.Input::get('id')], '', Environment::get('requestUri')));
     }
 
     /**

@@ -104,6 +104,54 @@ class ChurchToolsClient
     }
 
     /**
+     * Personensuche über die zentrale ChurchTools-Suche - dieselbe, die auch die
+     * Oberfläche dort benutzt. Liefert Name, ID und Bild in einem Rutsch.
+     *
+     * @return list<array{id: int, name: string, firstName: string, lastName: string}>
+     */
+    public function searchPersons(Connection $connection, string $query, int $limit = 15): array
+    {
+        $query = trim($query);
+
+        if (mb_strlen($query) < 2) {
+            return [];
+        }
+
+        $data = $this->get($connection, '/api/search', [
+            'query' => $query,
+            'domainTypes[]' => 'person',
+        ]);
+
+        $results = [];
+
+        foreach ($data['data'] ?? [] as $hit) {
+            if ('person' !== ($hit['domainType'] ?? null)) {
+                continue;
+            }
+
+            // Archivierte und verstorbene Personen gehören nicht auf eine Website.
+            $attributes = $hit['domainAttributes'] ?? [];
+
+            if (($attributes['isArchived'] ?? false) || null !== ($attributes['dateOfDeath'] ?? null)) {
+                continue;
+            }
+
+            $results[] = [
+                'id' => (int) ($hit['domainIdentifier'] ?? 0),
+                'name' => (string) ($hit['title'] ?? ''),
+                'firstName' => (string) ($attributes['firstName'] ?? ''),
+                'lastName' => (string) ($attributes['lastName'] ?? ''),
+            ];
+
+            if (\count($results) >= $limit) {
+                break;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public function getGroup(Connection $connection, int $groupId): array|null

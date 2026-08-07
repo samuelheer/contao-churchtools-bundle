@@ -33,21 +33,6 @@ class ContentDcaListener
     /**
      * @return array<int, string>
      */
-    #[AsCallback(table: 'tl_content', target: 'fields.churchtoolsConnection.options')]
-    public function getConnections(): array
-    {
-        $options = [];
-
-        foreach ($this->registry->all() as $connection) {
-            $options[$connection->id] = $connection->title;
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array<int, string>
-     */
     #[AsCallback(table: 'tl_content', target: 'fields.churchtoolsGroupId.options')]
     public function getGroups(DataContainer|null $dc = null): array
     {

@@ -1,3 +1,12 @@
+# Liegt unter /contao und damit hinter der Backend-Firewall.
+contao_churchtools_person_search:
+    path: /contao/churchtools/person-search
+    defaults:
+        _controller: SamuelHeer\ContaoChurchToolsBundle\Controller\PersonSearchController
+        _scope: backend
+        _token_check: false
+    methods: [GET]
+
 contao_churchtools_avatar:
     path: /_churchtools/avatar/{connection}/{personId}/{size}
     defaults:

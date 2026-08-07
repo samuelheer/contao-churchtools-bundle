@@ -32,7 +32,9 @@ class SyncCron
     #[AsCronJob('hourly')]
     public function __invoke(): void
     {
-        $report = $this->sync->syncAll();
+        // Stündlich geprüft, aber je Kalender nur ausgeführt, wenn dessen
+        // Intervall es zulässt - „manual" wird hier nie angefasst.
+        $report = $this->sync->syncAll(respectInterval: true);
 
         if ($report->hasChanges() || [] !== $report->errors) {
             $this->logger?->info('ChurchTools-Sync: '.$report->summary());
