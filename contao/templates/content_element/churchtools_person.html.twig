@@ -2,6 +2,9 @@
 
 {% block content %}
     {% if people is not empty %}
-        {% include '@Contao/churchtools/person_' ~ variant ~ '.html.twig' with {people} only %}
+        {# Array-Notation ist Pflicht: Contao laesst dynamisch zusammengesetzte
+           Template-Namen nur so zu ("Optional templates are only supported in
+           array notation"). #}
+        {% include ['@Contao/churchtools/person_' ~ variant ~ '.html.twig'] with {people} only %}
     {% endif %}
 {% endblock %}

@@ -182,15 +182,32 @@ class ChurchToolsClient
     }
 
     /**
-     * Rollen eines Gruppentyps - für die Auswahl "welche Rolle gilt als Leitung".
+     * Gruppenrollen - für die Auswahl "welche Rolle gilt als Leitung".
      *
-     * @return list<array<string, mixed>>
+     * Der Endpunkt heißt /api/group/roles; /api/masterdata/... existiert nicht
+     * (liefert 404, geprüft gegen 3.135.1).
+     *
+     * @return list<array{id: int, name: string, isLeader: bool}>
      */
     public function getGroupTypeRoles(Connection $connection): array
     {
-        $data = $this->get($connection, '/api/masterdata/groups/roles');
+        $data = $this->get($connection, '/api/group/roles');
 
-        return array_values($data['data'] ?? []);
+        $roles = [];
+
+        foreach ($data['data'] ?? [] as $role) {
+            if (!isset($role['id']) || ($role['isHidden'] ?? false)) {
+                continue;
+            }
+
+            $roles[] = [
+                'id' => (int) $role['id'],
+                'name' => (string) ($role['nameTranslated'] ?? $role['name'] ?? ''),
+                'isLeader' => (bool) ($role['isLeader'] ?? false),
+            ];
+        }
+
+        return $roles;
     }
 
     /**

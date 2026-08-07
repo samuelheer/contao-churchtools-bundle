@@ -71,7 +71,6 @@ class PersonController extends AbstractContentElementController
 
         $template->set('people', $prepared);
         $template->set('variant', $model->churchtoolsVariant ?: 'card');
-        $template->set('headline', $model->headline);
 
         return $template->getResponse();
     }

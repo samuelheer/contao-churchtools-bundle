@@ -74,34 +74,19 @@ final class Person
      */
     public function toPublicArray(Connection $connection): array
     {
-        $public = [
+        // Die Schlüssel sind immer dieselben, nicht freigegebene Felder sind null.
+        // Sonst müsste jedes Template prüfen, ob ein Feld überhaupt existiert -
+        // und bräche, sobald jemand die Freigabe umstellt.
+        return [
             'id' => $this->id,
             'fullName' => $this->fullName(),
+            'firstName' => $connection->allowsPersonField('firstName') ? $this->displayFirstName() : null,
+            'lastName' => $connection->allowsPersonField('lastName') ? $this->lastName : null,
+            'job' => $connection->allowsPersonField('job') ? $this->job : null,
+            'email' => $connection->allowsPersonField('email') ? $this->email : null,
+            'mobile' => $connection->allowsPersonField('mobile') ? $this->mobile : null,
+            'hasImage' => $connection->allowsPersonField('image') && $this->allowsImageUse && null !== $this->imageUrl,
         ];
-
-        if ($connection->allowsPersonField('firstName')) {
-            $public['firstName'] = $this->displayFirstName();
-        }
-
-        if ($connection->allowsPersonField('lastName')) {
-            $public['lastName'] = $this->lastName;
-        }
-
-        if ($connection->allowsPersonField('job')) {
-            $public['job'] = $this->job;
-        }
-
-        if ($connection->allowsPersonField('email')) {
-            $public['email'] = $this->email;
-        }
-
-        if ($connection->allowsPersonField('mobile')) {
-            $public['mobile'] = $this->mobile;
-        }
-
-        $public['hasImage'] = $connection->allowsPersonField('image') && $this->allowsImageUse && null !== $this->imageUrl;
-
-        return $public;
     }
 
     private static function text(mixed $value): string|null

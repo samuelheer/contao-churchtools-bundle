@@ -82,9 +82,8 @@ class ContentDcaListener
         $options = [];
 
         foreach ($roles as $role) {
-            if (isset($role['id'])) {
-                $options[(int) $role['id']] = ($role['name'] ?? '').' ('.$role['id'].')';
-            }
+            // Leitungsrollen kennzeichnen - das ist der häufigste Anwendungsfall.
+            $options[$role['id']] = $role['name'].($role['isLeader'] ? ' (Leitung)' : '').' ['.$role['id'].']';
         }
 
         asort($options);

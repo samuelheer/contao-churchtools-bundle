@@ -52,7 +52,7 @@ class EventFlyerController extends AbstractContentElementController
         foreach ($this->findUpcoming($calendarIds, $limit) as $event) {
             $figure = $this->studio
                 ->createFigureBuilder()
-                ->fromUuid((string) $event->singleSRC)
+                ->fromUuid(StringUtil::binToUuid($event->singleSRC))
                 ->setSize($model->size)
                 ->enableLightbox((bool) $model->fullsize)
                 ->buildIfResourceExists()
@@ -72,7 +72,6 @@ class EventFlyerController extends AbstractContentElementController
         }
 
         $template->set('flyers', $flyers);
-        $template->set('headline', $model->headline);
 
         return $template->getResponse();
     }
