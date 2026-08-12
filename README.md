@@ -167,6 +167,11 @@ Ist ChurchTools nicht erreichbar, bleibt die Website vollständig: Termine liege
 | `churchtools:person --search=<Name>` | Personensuche wie im Backend-Auswahlfeld |
 | `churchtools:person --group=<ID> [--role=<ID>]` | Löst eine Gruppe bzw. Rolle auf |
 
+## Weiterentwicklung
+
+Designentscheidungen, Architektur und die Fallstricke aus dem Bau stehen in
+[`docs/entwicklung.md`](docs/entwicklung.md) - lesenswert, bevor man etwas ändert.
+
 ## Lizenz
 
 LGPL-3.0-or-later
