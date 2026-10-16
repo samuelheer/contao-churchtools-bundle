@@ -231,17 +231,13 @@ Schlug der Bild-Download fehl, wurde der Feld-Hash trotzdem gespeichert. Beim n�
 
 ## 6. Bekannte Grenzen und offene Punkte
 
-### Die Freigabeprüfung ist noch zu grob
+### Freigabeprüfung: was gefiltert wird und was nicht
 
-`releasedIds()` nimmt **jedes** Mitglied der Freigabegruppe, ohne weitere Prüfung. Damit gilt als freigegeben, wer eigentlich nicht sollte:
+`ChurchToolsClient::getGroupMembers()` lässt nur **aktive** Mitgliedschaften ohne abgelaufenes `memberEndDate` durch. „Angefragt", Warteliste und Ausgeschiedene gelten damit nicht als freigegeben - Voraussetzung dafür, dass Freigabegruppen zum Selbsteintragen geöffnet werden können.
 
-| Feld | Folge |
-|---|---|
-| `groupMemberStatus` | Bei einer Gruppe mit Anmeldung zählen auch **„angefragt"** und **Warteliste** als freigegeben |
-| `memberEndDate` | Ein Mitglied mit Enddatum in der Vergangenheit bleibt sichtbar |
-| `isArchived`, `dateOfDeath` | Werden nur in der Backend-Suche gefiltert, nicht beim Ausliefern |
+Noch offen: `isArchived` und `dateOfDeath` werden nur in der Backend-Suche gefiltert, nicht beim Ausliefern. Praktisch fällt das kaum auf (archivierte Personen sind meist auch aus Gruppen raus), sauber wäre eine Prüfung in `PersonProvider::get()`.
 
-Solange die Freigabegruppe eine handverlesene Verwaltungsgruppe ist, fällt das nicht auf. Sobald sie eine Gruppe wird, in die man sich anmelden kann, kippt es. **Zu schließen in `PersonProvider::releasedIds()`.**
+Rollen spielen bei der Freigabe keine Rolle - jede aktive Rolle zählt. Dass in der ETG-Instanz ein „Verwalter" der Freigabegruppe für den API-Benutzer unsichtbar war und deshalb nicht erschien, lag an den Gruppenrechten in ChurchTools, nicht am Bundle.
 
 ### Weitere Grenzen
 
