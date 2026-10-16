@@ -162,13 +162,23 @@ class ChurchToolsClient
     }
 
     /**
-     * Mitglieder einer Gruppe, seitenweise vollständig geholt.
+     * Aktive Mitglieder einer Gruppe, seitenweise vollständig geholt.
+     *
+     * Wartende, Angefragte und Ausgeschiedene liefert die API mit. Sie fallen
+     * hier heraus - sonst erschiene auf der Website, wer sich nur angemeldet hat
+     * oder längst nicht mehr dabei ist.
      *
      * @return list<array<string, mixed>>
      */
     public function getGroupMembers(Connection $connection, int $groupId): array
     {
-        return $this->getPaginated($connection, '/api/groups/'.$groupId.'/members');
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+
+        return array_values(array_filter(
+            $this->getPaginated($connection, '/api/groups/'.$groupId.'/members'),
+            static fn (array $member): bool => 'active' === ($member['groupMemberStatus'] ?? null)
+                && (empty($member['memberEndDate']) || substr((string) $member['memberEndDate'], 0, 10) >= $today),
+        ));
     }
 
     /**
@@ -187,7 +197,7 @@ class ChurchToolsClient
      * Der Endpunkt heißt /api/group/roles; /api/masterdata/... existiert nicht
      * (liefert 404, geprüft gegen 3.135.1).
      *
-     * @return list<array{id: int, name: string, isLeader: bool}>
+     * @return list<array{id: int, groupTypeId: int, name: string, isLeader: bool}>
      */
     public function getGroupTypeRoles(Connection $connection): array
     {
@@ -202,6 +212,7 @@ class ChurchToolsClient
 
             $roles[] = [
                 'id' => (int) $role['id'],
+                'groupTypeId' => (int) ($role['groupTypeId'] ?? 0),
                 'name' => (string) ($role['nameTranslated'] ?? $role['name'] ?? ''),
                 'isLeader' => (bool) ($role['isLeader'] ?? false),
             ];

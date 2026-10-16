@@ -16,7 +16,7 @@ declare(strict_types=1);
  */
 $GLOBALS['TL_DCA']['tl_content']['palettes']['churchtools_person'] =
     '{type_legend},type,headline;'
-    .'{churchtools_legend},churchtoolsSource;'
+    .'{churchtools_legend},churchtoolsGroupId,churchtoolsRoleId,churchtoolsGroupLimit,churchtoolsPersonId;'
     .'{template_legend:hide},churchtoolsVariant,customTpl;'
     .'{protected_legend:hide},protected;'
     .'{expert_legend:hide},cssID;'
@@ -31,32 +31,17 @@ $GLOBALS['TL_DCA']['tl_content']['palettes']['churchtools_event_flyer'] =
     .'{expert_legend:hide},cssID;'
     .'{invisible_legend:hide},invisible,start,stop';
 
-$GLOBALS['TL_DCA']['tl_content']['subpalettes']['churchtoolsSource_person'] = 'churchtoolsPersonId';
-$GLOBALS['TL_DCA']['tl_content']['subpalettes']['churchtoolsSource_group'] = 'churchtoolsGroupId,churchtoolsRoleId';
+/*
+ * Gruppe/Rolle und feste Person lassen sich kombinieren: z. B. "die Leitung der
+ * Spürnasen" plus der Pastor als feste Ansprechperson. Beides ist optional;
+ * die Personen aus der Gruppe kommen zuerst, die feste Person danach.
+ */
 
-$GLOBALS['TL_DCA']['tl_content']['palettes']['__selector__'][] = 'churchtoolsSource';
-
-$GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsSource'] = [
-    'inputType' => 'radio',
-    'exclude' => true,
-    'options' => ['person', 'group'],
-    'reference' => &$GLOBALS['TL_LANG']['tl_content']['churchtoolsSourceOptions'],
-    'eval' => ['submitOnChange' => true, 'tl_class' => 'clr'],
-    'sql' => ['type' => 'string', 'length' => 16, 'default' => 'person'],
-];
-
-// Namenssuche statt ID-Eingabe: live gegen die zentrale ChurchTools-Suche.
-$GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsPersonId'] = [
-    'inputType' => 'churchtoolsPersonPicker',
-    'exclude' => true,
-    'eval' => ['mandatory' => true, 'tl_class' => 'clr'],
-    'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
-];
-
+// Neu laden beim Wechsel, damit die Rollenliste zum Gruppentyp passt.
 $GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsGroupId'] = [
     'inputType' => 'select',
     'exclude' => true,
-    'eval' => ['includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'],
+    'eval' => ['includeBlankOption' => true, 'chosen' => true, 'submitOnChange' => true, 'tl_class' => 'w50'],
     'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
 ];
 
@@ -64,6 +49,24 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsRoleId'] = [
     'inputType' => 'select',
     'exclude' => true,
     'eval' => ['includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'],
+    'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
+];
+
+// 0 = alle, 1 = nur eine Person (die erste in der Reihenfolge von ChurchTools)
+$GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsGroupLimit'] = [
+    'inputType' => 'select',
+    'exclude' => true,
+    'options' => [0, 1],
+    'reference' => &$GLOBALS['TL_LANG']['tl_content']['churchtoolsGroupLimitOptions'],
+    'eval' => ['tl_class' => 'w50'],
+    'sql' => ['type' => 'smallint', 'unsigned' => true, 'default' => 0],
+];
+
+// Namenssuche statt ID-Eingabe: live gegen die zentrale ChurchTools-Suche.
+$GLOBALS['TL_DCA']['tl_content']['fields']['churchtoolsPersonId'] = [
+    'inputType' => 'churchtoolsPersonPicker',
+    'exclude' => true,
+    'eval' => ['tl_class' => 'clr'],
     'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
 ];
 

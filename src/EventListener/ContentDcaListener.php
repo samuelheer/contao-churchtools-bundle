@@ -75,6 +75,7 @@ class ContentDcaListener
 
         try {
             $roles = $this->client->getGroupTypeRoles($connection);
+            $groupTypeId = $this->groupTypeOf($connection, (int) ($dc?->activeRecord?->churchtoolsGroupId ?? 0));
         } catch (ChurchToolsException) {
             return [];
         }
@@ -82,6 +83,12 @@ class ContentDcaListener
         $options = [];
 
         foreach ($roles as $role) {
+            // Nur Rollen, die es in der gewählten Gruppe überhaupt gibt. Sonst
+            // stehen "Leiter" und "Teilnehmer" jedes Gruppentyps nebeneinander.
+            if (null !== $groupTypeId && $role['groupTypeId'] !== $groupTypeId) {
+                continue;
+            }
+
             // Leitungsrollen kennzeichnen - das ist der häufigste Anwendungsfall.
             $options[$role['id']] = $role['name'].($role['isLeader'] ? ' (Leitung)' : '').' ['.$role['id'].']';
         }
@@ -89,6 +96,20 @@ class ContentDcaListener
         asort($options);
 
         return $options;
+    }
+
+    /**
+     * Gruppentyp der gewählten Gruppe; null, solange keine Gruppe gewählt ist.
+     */
+    private function groupTypeOf(Connection $connection, int $groupId): int|null
+    {
+        if ($groupId < 1) {
+            return null;
+        }
+
+        $typeId = (int) ($this->client->getGroup($connection, $groupId)['information']['groupTypeId'] ?? 0);
+
+        return $typeId > 0 ? $typeId : null;
     }
 
     /**
