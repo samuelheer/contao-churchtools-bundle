@@ -28,10 +28,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class AvatarController
 {
+    /**
+     * Ausgelieferte Kantenlänge in Pixeln - doppelt so groß wie die übliche
+     * Darstellung, damit das Bild auf hochauflösenden Displays scharf bleibt.
+     */
     private const SIZES = [
-        'small' => 100,
-        'medium' => 300,
-        'large' => 600,
+        'small' => 200,
+        'medium' => 600,
+        'large' => 1200,
     ];
 
     public function __construct(
@@ -52,8 +56,8 @@ class AvatarController
 
         $person = $this->personProvider->get($conn, $personId);
 
-        // Nicht freigegeben, kein Bildrecht oder kein Bild: alles 404.
-        if (null === $person || !$person->allowsImageUse || null === $person->imageUrl || !$conn->allowsPersonField('image')) {
+        // Nicht freigegeben, nicht in der Bildfreigabegruppe oder kein Bild: alles 404.
+        if (null === $person || null === $person->imageUrl || !$conn->allowsPersonField('image') || !$this->personProvider->isImageReleased($conn, $personId)) {
             throw new NotFoundHttpException();
         }
 
@@ -65,7 +69,9 @@ class AvatarController
             $payload = $item->get();
         } else {
             try {
-                $original = $this->client->download($conn, $person->imageUrl);
+                // imageUrl ist nur ein 150-px-Vorschaubild. Mit w/h liefert ChurchTools
+                // das Original quadratisch um den gepflegten Fokuspunkt zugeschnitten.
+                $original = $this->client->download($conn, $this->sizedUrl($person->imageUrl, $width));
             } catch (ChurchToolsException) {
                 throw new NotFoundHttpException();
             }
@@ -86,6 +92,11 @@ class AvatarController
         $response->headers->addCacheControlDirective('private');
 
         return $response;
+    }
+
+    private function sizedUrl(string $imageUrl, int $width): string
+    {
+        return $imageUrl.(str_contains($imageUrl, '?') ? '&' : '?').http_build_query(['w' => $width, 'h' => $width]);
     }
 
     /**

@@ -162,8 +162,22 @@ class ConnectionRegistry
             token: $this->resolveToken($tokenEnvVar),
             filesPath: trim((string) ($row['filesPath'] ?? ''), '/'),
             publicPersonGroupId: (int) ($row['publicPersonGroupId'] ?? 0) ?: null,
+            imageReleaseGroupId: (int) ($row['imageReleaseGroupId'] ?? 0) ?: null,
             personFields: $personFields ?: ['image', 'firstName', 'lastName', 'jobTitle'],
+            emailDomains: $this->emailDomains((string) ($row['emailDomains'] ?? '')),
         );
+    }
+
+    /**
+     * "etg-scheppach.de, @Beispiel.org" -> ['etg-scheppach.de', 'beispiel.org']
+     *
+     * @return list<string>
+     */
+    private function emailDomains(string $value): array
+    {
+        $domains = array_map(static fn (string $d): string => strtolower(ltrim(trim($d), '@')), explode(',', $value));
+
+        return array_values(array_unique(array_filter($domains)));
     }
 
     /**

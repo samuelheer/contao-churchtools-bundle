@@ -13,7 +13,9 @@ $GLOBALS['TL_LANG']['tl_churchtools_connection']['baseUrl'] = ['Adresse', 'Basis
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['tokenEnvVar'] = ['Name der Umgebungsvariablen', 'Hier steht nur der NAME der Variablen, z. B. CHURCHTOOLS_TOKEN_SCHEPPACH. Das Token selbst gehört in die .env-Datei und niemals in die Datenbank.'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['filesPath'] = ['Ordner für Bilder', 'Zielordner für importierte Flyer, z. B. files/etgscheppach/churchtools'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['publicPersonGroupId'] = ['Freigabegruppe für Personen', 'ID der ChurchTools-Gruppe, die festlegt, wer auf der Website erscheinen darf. Ohne Gruppe wird keine Person ausgeliefert.'];
-$GLOBALS['TL_LANG']['tl_churchtools_connection']['personFields'] = ['Freigegebene Personenfelder', 'Nur diese Felder verlassen ChurchTools. Das Bild erscheint zusätzlich nur, wenn in ChurchTools die Bildnutzung erlaubt ist.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['imageReleaseGroupId'] = ['Freigabegruppe für Bilder (optional)', 'Leer: Das ChurchTools-Profilfoto erscheint bei jeder freigegebenen Person - wer es hochlädt, zeigt es bewusst. Mit Gruppe: nur bei deren aktiven Mitgliedern.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['emailDomains'] = ['Erlaubte E-Mail-Domains', 'Kommagetrennt, z. B. etg-scheppach.de. Dann erscheint nur eine Adresse dieser Domain - auch wenn sie in ChurchTools nicht die Standardadresse ist. Private Adressen bleiben verborgen. Leer: die Standardadresse.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['personFields'] = ['Freigegebene Personenfelder', 'Nur diese Felder verlassen ChurchTools. Das Bild ist das Profilfoto aus ChurchTools.'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['disable'] = ['Deaktivieren', 'Die Verbindung vorübergehend stilllegen.'];
 
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['personFieldOptions'] = [

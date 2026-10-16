@@ -1,6 +1,24 @@
 {% extends '@Contao/content_element/_base.html.twig' %}
 
 {% block content %}
+    {% if preview|default %}
+        {# Nur im Backend: Rückmeldung für Redakteure, was hier erscheint. #}
+        <div class="ct-preview" style="margin:0 0 10px;padding:8px 10px;border-left:3px solid #589b0e;background:rgba(88,155,14,.06);font-size:.8125rem;line-height:1.5">
+            <strong>{{ preview.variant }}</strong>{% if preview.connection %} <span style="opacity:.7">· {{ preview.connection }}</span>{% endif %}
+            {% for note in preview.notes %}
+                <div style="color:{{ {error: '#c33', warning: '#b06d00'}[note.level]|default('inherit') }}">{{ note.text }}</div>
+            {% endfor %}
+        </div>
+        <style>
+            .ct-preview ~ .ct-people img, .ct-preview ~ * .ct-person__image { max-width: 96px; height: auto; border-radius: 4px; display: block; margin-bottom: 4px }
+            .ct-preview ~ .ct-people--card, .ct-preview ~ .ct-people--contact { display: flex; flex-wrap: wrap; gap: 16px }
+            .ct-preview ~ .ct-people--list { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; padding: 0; margin: 0 }
+            .ct-preview ~ .ct-people--list img { max-width: 48px }
+            .ct-preview ~ .ct-people figure { margin: 0 }
+            .ct-preview ~ .ct-people p { margin: 0 }
+            .ct-preview ~ .ct-people .ct-person__name { font-weight: 600; display: block }
+        </style>
+    {% endif %}
     {% if people is not empty %}
         {# Array-Notation ist Pflicht: Contao laesst dynamisch zusammengesetzte
            Template-Namen nur so zu ("Optional templates are only supported in

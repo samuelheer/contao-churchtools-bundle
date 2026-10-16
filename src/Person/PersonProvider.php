@@ -86,15 +86,49 @@ class PersonProvider
      */
     public function releasedIds(Connection $connection): array
     {
-        $groupId = $connection->publicPersonGroupId;
+        return $this->memberIds($connection, $connection->publicPersonGroupId, 'release');
+    }
 
-        if (null === $groupId) {
+    /**
+     * Ob das Profilfoto einer freigegebenen Person gezeigt werden darf.
+     *
+     * Ohne Bildfreigabegruppe: ja - wer in ChurchTools selbst ein Profilfoto
+     * hochlädt und in die Veröffentlichung eingewilligt hat, zeigt es bewusst.
+     * Mit Bildfreigabegruppe: nur deren aktive Mitglieder.
+     */
+    public function isImageReleased(Connection $connection, int $personId): bool
+    {
+        if (!$connection->hasImageRelease()) {
+            return $this->isReleased($connection, $personId);
+        }
+
+        return \in_array($personId, $this->imageReleasedIds($connection), true);
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function imageReleasedIds(Connection $connection): array
+    {
+        return $this->memberIds($connection, $connection->imageReleaseGroupId, 'image_release');
+    }
+
+    /**
+     * Aktive Mitglieder einer Freigabegruppe, je Verbindung und Zweck gecacht.
+     *
+     * @return list<int>
+     */
+    private function memberIds(Connection $connection, int|null $groupId, string $purpose): array
+    {
+        if (null === $groupId || $groupId < 1) {
             return [];
         }
 
+        $key = $connection->cachePrefix().'.'.$purpose;
+
         return $this->remember(
-            $connection->cachePrefix().'.release',
-            [$connection->cachePrefix().'.release'],
+            $key,
+            [$key],
             function () use ($connection, $groupId): array {
                 $ids = [];
 

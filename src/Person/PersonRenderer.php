@@ -29,6 +29,7 @@ class PersonRenderer
     public function __construct(
         private readonly Environment $twig,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly PersonProvider $personProvider,
     ) {
     }
 
@@ -48,7 +49,7 @@ class PersonRenderer
         $prepared = [];
 
         foreach ($people as $person) {
-            $data = $person->toPublicArray($connection);
+            $data = $person->toPublicArray($connection, $this->personProvider->isImageReleased($connection, $person->id));
             $data['imageUrl'] = $data['hasImage'] ? $this->avatarUrl($connection, $person->id) : null;
             $prepared[] = $data;
         }

@@ -175,12 +175,23 @@ ohne Authorization           →  HTTP 200, Bild
 
 Downloads deshalb zuerst **ohne** Anmeldung anfordern und nur bei Ablehnung auf den angemeldeten Versuch zurückfallen. Andernfalls kommt kein einziges Bild an - und der Fehler sieht aus wie ein Berechtigungsproblem.
 
+### `imageUrl` ist nur ein 150-px-Vorschaubild
+
+`person.imageUrl` liefert ein 150 × 150 px großes Quadrat - auf der Website sichtbar verpixelt. Dieselbe URL nimmt aber Größenparameter an und schneidet dabei selbst um den in ChurchTools gepflegten Fokuspunkt zu:
+
+```
+<imageUrl>?w=600&h=600   ->  600 × 600, scharf, quadratisch
+<imageUrl>?w=600         ->  600 × 150 (!) - immer beide Werte setzen
+```
+
+Der `AvatarController` fordert deshalb die Zielgröße direkt an (small 200, medium 600, large 1200 - doppelt so groß wie dargestellt, für Retina). Das Original (`/api/files/avatar/<personId>` → `fileUrl`) bräuchte dagegen eine Cookie-Session und muss selbst zugeschnitten werden - unnötig.
+
 ### Personenfelder heißen anders als erwartet
 
 - Die Funktionsbezeichnung steht in **`job`**, nicht in `jobTitle` (letzteres ist immer `null`)
-- Das Bildrecht in **`privacy_policy_use_image`**, ein echter Boolean
+- **`privacy_policy_use_image`** („Bildverwendung eingewilligt“) ist **kein ChurchTools-Standardfeld**, sondern ein selbst angelegtes Testfeld der ETG-Instanz - deshalb nie darauf bauen. Wird nicht mehr ausgewertet
 
-> Erfahrungswert: In einer gewachsenen Installation ist dieses Feld oft bei **niemandem** gesetzt. Dann erscheint kein einziges Personenbild - technisch völlig korrekt, aber für den Betreiber überraschend. Das gehört in die Einführungskommunikation, nicht in den Code.
+> Erfahrungswert: In einer gewachsenen Installation ist dieses Feld oft bei **niemandem** gesetzt (ETG Scheppach: nicht einmal beim Admin, obwohl ein Foto hinterlegt ist). Seit 16.10.2026 gilt: Das **Profilfoto** erscheint bei jeder freigegebenen Person - wer es in ChurchTools hochlädt und in die Website-Veröffentlichung einwilligt, zeigt es bewusst. Eine **Bildfreigabegruppe** (`imageReleaseGroupId`) ist nur noch optionale Zusatzschranke. Bewusst nicht an eine allgemeine Bildeinwilligung gekoppelt (ETG: Gruppe 48 „Veröffentlichung Bildmaterial" regelt beliebige Fotos aus dem Gemeindeleben, nicht das selbst hochgeladene Profilfoto).
 
 ### Rollen kommen von `/api/group/roles`
 

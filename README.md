@@ -59,9 +59,26 @@ Backend → **System → ChurchTools-Verbindungen**
 | Name der Umgebungsvariablen | z. B. `CHURCHTOOLS_TOKEN_MAIN` - nicht das Token selbst |
 | Ordner für Bilder | Zielordner für importierte Flyer, z. B. `files/gemeinde/churchtools` |
 | Freigabegruppe für Personen | ID der Gruppe, die entscheidet, wer auf der Website erscheinen darf |
+| Freigabegruppe für Bilder | optional. Leer: Das ChurchTools-Profilfoto erscheint bei jeder freigegebenen Person. Mit Gruppe: nur bei deren Mitgliedern |
 | Freigegebene Personenfelder | Welche Felder ChurchTools überhaupt verlassen |
+| Erlaubte E-Mail-Domains | z. B. `etg-scheppach.de` - dann erscheint nur eine Gemeinde-Adresse (auch eine weitere, nicht die Standardadresse), private nie. Leer: Standardadresse |
 
 Die Übersicht zeigt an, ob das Token in der Umgebung gefunden wurde. Fehlt es, steht das dort - statt dass der Abgleich stillschweigend nichts tut.
+
+### Empfehlung: Freigaben als Einwilligungsgruppen zum Selbsteintragen
+
+Freigabe- und Bildfreigabegruppe sind Einwilligungen. Am einfachsten pflegen die Personen sie selbst:
+
+| Einstellung der Gruppe | Wert |
+|---|---|
+| Sichtbarkeit | intern (in App und Web auffindbar) |
+| Offen für Anmeldungen / automatisch aufnehmen | an / an - der Eintritt ist die Einwilligung |
+| Anmelde-Überschrift | der Einwilligungstext (was, wo, freiwillig, Widerruf durch Austritt) |
+| Rolle der Teilnehmer | ohne „Teilnehmer sehen" - niemand sieht, wer sonst eingewilligt hat |
+
+Eintrittsdatum und Protokoll belegen die Einwilligung. Alte Einwilligungsgruppen nicht löschen, sondern beenden - sonst geht das Eintrittsdatum als Nachweis verloren.
+
+Ein selbst bearbeitbares Personenfeld ist keine Alternative, wenn die Einwilligung vor anderen verborgen sein soll: ChurchTools-Sicherheitsstufen sind eine Treppe. Was die Person selbst bearbeiten darf, liegt unterhalb dessen, was etwa Gruppenmitglieder sehen, sobald diese mehr als nur eigene Felder sehen sollen (z. B. den Geburtstag).
 
 ### 4. Website zuordnen
 
@@ -126,7 +143,13 @@ vendor/bin/contao-console churchtools:sync --from=2025-01-01 --to=2026-12-31
 
 ### Inhaltselement „Person"
 
-Wahlweise eine feste Person - im Backend über ein **Suchfeld** nach Namen gewählt - oder eine **Rolle in einer Gruppe**. Bei der Rolle wechselt die Anzeige automatisch mit, sobald sich in ChurchTools die Zuständigkeit ändert.
+Eine **Rolle in einer Gruppe** und/oder eine **feste Person**, beides kombinierbar:
+
+- **Gruppe und Rolle**: z. B. „Leitung der Spürnasen". Wechselt die Zuständigkeit in ChurchTools, wechselt die Anzeige automatisch mit. Die Rollenliste zeigt nur Rollen des Gruppentyps der gewählten Gruppe.
+- **Anzahl**: alle Personen dieser Rolle oder nur eine (die erste in der Reihenfolge von ChurchTools).
+- **Zusätzliche Person**: im Backend über ein **Suchfeld** nach Namen gewählt. Sie erscheint nach den Personen aus der Gruppe; steht sie dort schon, wird sie nicht doppelt gezeigt. Ohne Gruppe ist sie die einzige Person.
+
+Berücksichtigt werden nur **aktive** Mitgliedschaften - Wartende, Angefragte und Ausgeschiedene erscheinen weder über die Rolle noch in der Freigabegruppe.
 
 Darstellungen: `card`, `inline`, `contact`, `list`. Die Templates liegen unter `@Contao/churchtools/person_*.html.twig` und lassen sich im Projekt überschreiben.
 
@@ -136,8 +159,8 @@ Das Bundle ist hier absichtlich streng:
 
 - **Personendaten werden nicht in die Contao-Datenbank gespiegelt**, sondern bei Bedarf geholt und kurz zwischengespeichert
 - **Ausgeliefert wird nur, wer in der Freigabegruppe steht.** Ohne konfigurierte Gruppe erscheint niemand - eine fehlende Einstellung gilt nicht als Vollfreigabe. Das greift auch, wenn eine Personen-ID direkt in einem Insert-Tag steht
-- **Nur ausgewählte Felder** verlassen ChurchTools; E-Mail und Telefon sind voreingestellt aus
-- **Das Bildrecht aus ChurchTools wird respektiert** - ohne gesetzte Einwilligung wird kein Bild ausgeliefert
+- **Nur ausgewählte Felder** verlassen ChurchTools; E-Mail und Telefon sind voreingestellt aus. Mit „Erlaubte E-Mail-Domains" lässt sich die E-Mail zusätzlich auf Gemeinde-Adressen begrenzen
+- **Bilder** - gezeigt wird ausschließlich das Profilfoto, das die Person selbst in ChurchTools hinterlegt hat, und nur bei freigegebenen Personen. Wer es hochlädt und in die Veröffentlichung einwilligt, zeigt es bewusst. Optional lässt sich das Foto zusätzlich an eine Bildfreigabegruppe binden
 - **Personenbilder** laufen über eine eigene Route und werden nie im Web-Verzeichnis abgelegt. Fehlt die Freigabe, antwortet sie mit 404 statt mit einem Platzhalter, der die Existenz der Person bestätigen würde
 - **Caches sind pro Verbindung getrennt** - Mandanten können sich nicht gegenseitig sehen
 
@@ -154,7 +177,7 @@ Ist ChurchTools nicht erreichbar, bleibt die Website vollständig: Termine liege
 | Kalenderliste im Backend bleibt leer | Verbindung wählen und **speichern** - die Liste wird erst danach von der API geholt. |
 | Termine kommen, aber ohne Flyer | Hat der Termin in ChurchTools ein Bild? Der Bericht des Abgleichs nennt die Ursache je Termin. |
 | Person erscheint nicht auf der Website | `vendor/bin/contao-console churchtools:person <ID>` - meist fehlt der Eintrag in der Freigabegruppe. |
-| Person erscheint, aber ohne Bild | In ChurchTools ist die Bildnutzung für diese Person nicht erlaubt. Das ist eine Einstellung dort, keine des Bundles. |
+| Person erscheint, aber ohne Bild | In ChurchTools ist kein Profilfoto hinterlegt, oder - falls konfiguriert - die Person steht nicht in der Bildfreigabegruppe. `churchtools:person <ID>` nennt den Grund. |
 | Änderungen am Termin verschwinden wieder | Der Kalender ist einer Verbindung zugeordnet und gehört dem Abgleich. Termine in ChurchTools bearbeiten. |
 | Eigenes Template greift nicht | Nach dem Anlegen `cache:clear` **und** `cache:warmup` - die Twig-Hierarchie wird nur beim Warmup neu gebaut. |
 

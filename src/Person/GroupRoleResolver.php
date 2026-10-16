@@ -48,6 +48,94 @@ class GroupRoleResolver
         return $this->personProvider->getMany($connection, $personIds);
     }
 
+    /**
+     * Alle aktiven Mitglieder samt Namen - OHNE Freigabefilter. Nur für die
+     * Backend-Vorschau, damit Redakteure sehen, wer warum nicht erscheint.
+     * Niemals ins Frontend geben.
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    public function membersForPreview(Connection $connection, int $groupId, int|null $roleId = null): array
+    {
+        $key = $this->cacheTag($connection, $groupId).($roleId ? '.role.'.$roleId : '').'.preview';
+        $item = $this->cache->getItem($key);
+
+        if ($item->isHit()) {
+            return $item->get();
+        }
+
+        try {
+            $members = $this->client->getGroupMembers($connection, $groupId);
+        } catch (ChurchToolsException) {
+            return [];
+        }
+
+        $result = [];
+
+        foreach ($members as $member) {
+            if (!isset($member['personId'])) {
+                continue;
+            }
+
+            if (null !== $roleId && (int) ($member['groupTypeRoleId'] ?? 0) !== $roleId) {
+                continue;
+            }
+
+            $person = \is_array($member['person'] ?? null) ? $member['person'] : [];
+            $attributes = \is_array($person['domainAttributes'] ?? null) ? $person['domainAttributes'] : [];
+            $name = trim(($attributes['firstName'] ?? '').' '.($attributes['lastName'] ?? '')) ?: (string) ($person['title'] ?? '');
+
+            $result[] = ['id' => (int) $member['personId'], 'name' => '' !== $name ? $name : '#'.$member['personId']];
+        }
+
+        $item->set($result);
+        $item->expiresAfter(300);
+        $item->tag([$this->cacheTag($connection, $groupId)]);
+        $this->cache->save($item);
+
+        return $result;
+    }
+
+    /**
+     * Klartextnamen von Gruppe und Rolle für die Backend-Vorschau - Redakteure
+     * sehen in ChurchTools keine IDs. Fällt bei einem Fehler auf die ID zurück.
+     *
+     * @return array{group: string, role: string|null}
+     */
+    public function labelsForPreview(Connection $connection, int $groupId, int|null $roleId = null): array
+    {
+        $key = $this->cacheTag($connection, $groupId).($roleId ? '.role.'.$roleId : '').'.labels';
+        $item = $this->cache->getItem($key);
+
+        if ($item->isHit()) {
+            return $item->get();
+        }
+
+        $labels = ['group' => '#'.$groupId, 'role' => $roleId ? '#'.$roleId : null];
+
+        try {
+            $group = $this->client->getGroup($connection, $groupId);
+            $labels['group'] = trim((string) ($group['name'] ?? '')) ?: $labels['group'];
+
+            if ($roleId) {
+                foreach ($this->client->getGroupTypeRoles($connection) as $role) {
+                    if ($role['id'] === $roleId && '' !== $role['name']) {
+                        $labels['role'] = $role['name'];
+                    }
+                }
+            }
+        } catch (ChurchToolsException) {
+            return $labels;
+        }
+
+        $item->set($labels);
+        $item->expiresAfter(self::TTL);
+        $item->tag([$this->cacheTag($connection, $groupId)]);
+        $this->cache->save($item);
+
+        return $labels;
+    }
+
     public function cacheTag(Connection $connection, int $groupId): string
     {
         return $connection->cachePrefix().'.group.'.$groupId;

@@ -13,7 +13,9 @@ $GLOBALS['TL_LANG']['tl_churchtools_connection']['baseUrl'] = ['URL', 'Base URL 
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['tokenEnvVar'] = ['Environment variable name', 'Only the NAME of the variable, e.g. CHURCHTOOLS_TOKEN_MAIN. The token itself belongs in your .env file, never in the database.'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['filesPath'] = ['Image folder', 'Target folder for imported flyers, e.g. files/church/churchtools'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['publicPersonGroupId'] = ['Person release group', 'ID of the ChurchTools group that decides who may appear on the website. Without a group, no person is served.'];
-$GLOBALS['TL_LANG']['tl_churchtools_connection']['personFields'] = ['Released person fields', 'Only these fields leave ChurchTools. The image additionally requires image usage to be granted in ChurchTools.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['imageReleaseGroupId'] = ['Image release group (optional)', 'Empty: the ChurchTools profile photo is shown for every released person. With a group: only for its active members.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['emailDomains'] = ['Allowed e-mail domains', 'Comma-separated, e.g. example.org. Only an address of these domains is shown, even if it is not the default address in ChurchTools. Private addresses stay hidden. Empty: the default address.'];
+$GLOBALS['TL_LANG']['tl_churchtools_connection']['personFields'] = ['Released person fields', 'Only these fields leave ChurchTools. The image is the ChurchTools profile photo.'];
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['disable'] = ['Disable', 'Temporarily disable this connection.'];
 
 $GLOBALS['TL_LANG']['tl_churchtools_connection']['personFieldOptions'] = [

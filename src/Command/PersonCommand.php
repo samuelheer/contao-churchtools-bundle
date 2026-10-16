@@ -77,6 +77,7 @@ class PersonCommand extends Command
         $io->section('Verbindung: '.$connection->title);
         $io->writeln('  Token: '.($connection->hasToken() ? 'gefunden' : 'FEHLT ('.$connection->tokenEnvVar.')'));
         $io->writeln('  Freigabegruppe: '.($connection->hasPersonRelease() ? (string) $connection->publicPersonGroupId : 'keine - es wird niemand ausgeliefert'));
+        $io->writeln('  Bildfreigabegruppe: '.($connection->hasImageRelease() ? (string) $connection->imageReleaseGroupId : 'keine - Profilfoto gilt mit der Personenfreigabe'));
         $io->writeln('  Freigegebene Felder: '.implode(', ', $connection->personFields));
         $io->newLine();
 
@@ -118,7 +119,7 @@ class PersonCommand extends Command
             $rows = [];
 
             foreach ($people as $person) {
-                $public = $person->toPublicArray($connection);
+                $public = $person->toPublicArray($connection, $this->personProvider->isImageReleased($connection, $person->id));
                 $rows[] = [$person->id, $public['fullName'], $public['job'] ?? '-', $public['hasImage'] ? 'ja' : 'nein'];
             }
 
@@ -149,7 +150,8 @@ class PersonCommand extends Command
             return Command::SUCCESS;
         }
 
-        $public = $person->toPublicArray($connection);
+        $imageReleased = $this->personProvider->isImageReleased($connection, $personId);
+        $public = $person->toPublicArray($connection, $imageReleased);
         $rows = [];
 
         foreach ($public as $key => $value) {
@@ -159,8 +161,12 @@ class PersonCommand extends Command
         $io->success('Person ist freigegeben. Ausgeliefert würde:');
         $io->table(['Feld', 'Wert'], $rows);
 
-        if (!$person->allowsImageUse) {
-            $io->note('Kein Bild: In ChurchTools ist die Bildnutzung für diese Person nicht erlaubt.');
+        if (!$connection->allowsPersonField('image')) {
+            $io->note('Kein Bild: Das Feld "Bild" ist an der Verbindung nicht freigegeben.');
+        } elseif (!$imageReleased) {
+            $io->note(\sprintf('Kein Bild: Person steht nicht (aktiv) in der Bildfreigabegruppe %d.', $connection->imageReleaseGroupId));
+        } elseif (null === $person->imageUrl) {
+            $io->note('Kein Bild: In ChurchTools ist kein Foto hinterlegt.');
         }
 
         return Command::SUCCESS;

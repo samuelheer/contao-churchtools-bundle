@@ -27,7 +27,8 @@ final class Person
         public readonly string|null $imageUrl,
         public readonly string|null $email,
         public readonly string|null $mobile,
-        public readonly bool $allowsImageUse,
+        /** @var list<string> alle Adressen der Person, Standardadresse zuerst */
+        public readonly array $emails = [],
     ) {
     }
 
@@ -49,7 +50,7 @@ final class Person
             imageUrl: self::text($data['imageUrl'] ?? null),
             email: self::text($data['email'] ?? null),
             mobile: self::text($data['mobile'] ?? null),
-            allowsImageUse: self::truthy($data['privacy_policy_use_image'] ?? null),
+            emails: self::emails($data),
         );
     }
 
@@ -67,12 +68,29 @@ final class Person
     }
 
     /**
+     * "Samuel Heer" -> "SH" - Ersatz, wenn kein Foto ausgeliefert wird.
+     */
+    public function initials(): string
+    {
+        $initials = '';
+
+        foreach ([$this->displayFirstName(), $this->lastName] as $part) {
+            if ('' !== $part) {
+                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+            }
+        }
+
+        return $initials;
+    }
+
+    /**
      * Gibt nur die Felder heraus, die für diese Verbindung freigegeben sind.
-     * Das Bild zusätzlich nur, wenn ChurchTools die Bildnutzung erlaubt.
+     * Das Bild zusätzlich nur, wenn die Person in der Bildfreigabegruppe steht -
+     * das prüft der Aufrufer über PersonProvider::isImageReleased().
      *
      * @return array<string, mixed>
      */
-    public function toPublicArray(Connection $connection): array
+    public function toPublicArray(Connection $connection, bool $imageReleased): array
     {
         // Die Schlüssel sind immer dieselben, nicht freigegebene Felder sind null.
         // Sonst müsste jedes Template prüfen, ob ein Feld überhaupt existiert -
@@ -80,13 +98,32 @@ final class Person
         return [
             'id' => $this->id,
             'fullName' => $this->fullName(),
+            'initials' => $this->initials(),
             'firstName' => $connection->allowsPersonField('firstName') ? $this->displayFirstName() : null,
             'lastName' => $connection->allowsPersonField('lastName') ? $this->lastName : null,
             'job' => $connection->allowsPersonField('job') ? $this->job : null,
-            'email' => $connection->allowsPersonField('email') ? $this->email : null,
+            'email' => $connection->allowsPersonField('email') ? $connection->publicEmail($this->emails) : null,
             'mobile' => $connection->allowsPersonField('mobile') ? $this->mobile : null,
-            'hasImage' => $connection->allowsPersonField('image') && $this->allowsImageUse && null !== $this->imageUrl,
+            'hasImage' => $connection->allowsPersonField('image') && $imageReleased && null !== $this->imageUrl,
         ];
+    }
+
+    /**
+     * Standardadresse plus alle weiteren aus ChurchTools, ohne Dubletten.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return list<string>
+     */
+    private static function emails(array $data): array
+    {
+        $emails = [self::text($data['email'] ?? null)];
+
+        foreach (\is_array($data['emails'] ?? null) ? $data['emails'] : [] as $entry) {
+            $emails[] = self::text(\is_array($entry) ? ($entry['email'] ?? null) : null);
+        }
+
+        return array_values(array_unique(array_filter($emails)));
     }
 
     private static function text(mixed $value): string|null
@@ -98,26 +135,5 @@ final class Person
         $value = trim($value);
 
         return '' !== $value ? $value : null;
-    }
-
-    /**
-     * ChurchTools liefert das Bildrecht je nach Version als 1/0, "1"/"" oder bool.
-     * Im Zweifel gilt: kein ausdrückliches Ja bedeutet nein.
-     */
-    private static function truthy(mixed $value): bool
-    {
-        if (\is_bool($value)) {
-            return $value;
-        }
-
-        if (\is_int($value)) {
-            return $value > 0;
-        }
-
-        if (\is_string($value)) {
-            return \in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'ja'], true);
-        }
-
-        return false;
     }
 }

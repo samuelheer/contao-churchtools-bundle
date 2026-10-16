@@ -21,6 +21,7 @@ final class Connection
 {
     /**
      * @param list<string> $personFields Personenfelder, die nach außen gegeben werden dürfen
+     * @param list<string> $emailDomains  Nur Adressen dieser Domains gehen raus; leer = jede
      */
     public function __construct(
         public readonly int $id,
@@ -30,7 +31,9 @@ final class Connection
         public readonly string|null $token,
         public readonly string $filesPath,
         public readonly int|null $publicPersonGroupId,
+        public readonly int|null $imageReleaseGroupId = null,
         public readonly array $personFields = ['image', 'firstName', 'lastName', 'jobTitle'],
+        public readonly array $emailDomains = [],
     ) {
     }
 
@@ -48,9 +51,42 @@ final class Connection
         return null !== $this->publicPersonGroupId && $this->publicPersonGroupId > 0;
     }
 
+    /**
+     * Optionale zusätzliche Einschränkung der Profilfotos auf eine Gruppe.
+     * Ohne Gruppe gilt das Foto mit der Personenfreigabe als freigegeben.
+     */
+    public function hasImageRelease(): bool
+    {
+        return null !== $this->imageReleaseGroupId && $this->imageReleaseGroupId > 0;
+    }
+
     public function allowsPersonField(string $field): bool
     {
         return \in_array($field, $this->personFields, true);
+    }
+
+    /**
+     * Die Adresse, die veröffentlicht werden darf. Sind Domains hinterlegt, nur
+     * eine Adresse dieser Domains - auch wenn sie in ChurchTools nicht die
+     * Standardadresse ist. So erscheinen Gemeinde-Adressen, private nie.
+     *
+     * @param list<string> $emails Standardadresse zuerst
+     */
+    public function publicEmail(array $emails): string|null
+    {
+        if ([] === $this->emailDomains) {
+            return $emails[0] ?? null;
+        }
+
+        foreach ($emails as $email) {
+            $domain = strtolower(substr((string) strrchr($email, '@'), 1));
+
+            if (\in_array($domain, $this->emailDomains, true)) {
+                return $email;
+            }
+        }
+
+        return null;
     }
 
     /**

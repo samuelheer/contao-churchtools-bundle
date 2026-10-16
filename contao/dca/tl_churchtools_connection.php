@@ -44,7 +44,7 @@ $GLOBALS['TL_DCA']['tl_churchtools_connection'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{title_legend},title,baseUrl,tokenEnvVar;{files_legend},filesPath;{person_legend},publicPersonGroupId,personFields;{publish_legend},disable',
+        'default' => '{title_legend},title,baseUrl,tokenEnvVar;{files_legend},filesPath;{person_legend},publicPersonGroupId,imageReleaseGroupId,personFields,emailDomains;{publish_legend},disable',
     ],
     'fields' => [
         'id' => [
@@ -86,6 +86,12 @@ $GLOBALS['TL_DCA']['tl_churchtools_connection'] = [
             'eval' => ['rgxp' => 'natural', 'maxlength' => 10, 'tl_class' => 'w50'],
             'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
         ],
+        'imageReleaseGroupId' => [
+            'inputType' => 'text',
+            'exclude' => true,
+            'eval' => ['rgxp' => 'natural', 'maxlength' => 10, 'tl_class' => 'w50'],
+            'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
+        ],
         'personFields' => [
             'inputType' => 'checkbox',
             'exclude' => true,
@@ -93,6 +99,12 @@ $GLOBALS['TL_DCA']['tl_churchtools_connection'] = [
             'reference' => &$GLOBALS['TL_LANG']['tl_churchtools_connection']['personFieldOptions'],
             'eval' => ['multiple' => true, 'tl_class' => 'clr'],
             'sql' => ['type' => 'blob', 'notnull' => false],
+        ],
+        'emailDomains' => [
+            'inputType' => 'text',
+            'exclude' => true,
+            'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
+            'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
         ],
         'disable' => [
             'inputType' => 'checkbox',
