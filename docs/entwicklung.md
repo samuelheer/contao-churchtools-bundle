@@ -312,3 +312,11 @@ Gefunden wurden sie erst beim Einbinden in eine echte Installation und beim erst
 Zu Stufe 3: Formularfelder sollen aus der ChurchTools-Anmeldung **gelesen** und im Website-Layout gerendert werden; abgeschickt wird an ChurchTools. Ein eigenes Anmelde-Datenmodell entsteht nicht. Der Mehrwert liegt in der Oberfläche und in einer Dublettenprüfung vor dem Schreiben - Dubletten sind die bekannte Schwäche öffentlicher Anmeldungen. Mehrere Personen in einem Vorgang (Familien) werden in mehrere native Einzelanmeldungen zerlegt.
 
 Zu Stufe 5: Social-Publishing und Newsletter brauchen dauerhaft laufende Prozesse, fremde OAuth-Tokens und Retry-Logik. Im Bundle würde daraus ein Monolith, der bei keiner anderen Gemeinde einsetzbar wäre. Das gehört in einen eigenen Dienst, der ChurchTools ebenfalls als Quelle liest.
+
+## Nachtrag v0.3.0 (November 2026)
+
+- **Personen-Status:** ChurchTools kennzeichnet ausgeschiedene Personen mit `isArchived`, `isDead` und `dateOfDeath`. Sie bleiben oft noch in Gruppen stehen, auch in der Freigabegruppe. Geprüft wird deshalb in `PersonProvider::get()` - dort laufen alle Ausgabewege vorbei.
+- **Gruppenauswahl an der Verbindung:** Ist ChurchTools beim Öffnen nicht erreichbar, bleibt die gespeicherte ID als Option stehen. Ohne diesen Rückfall würde ein Speichern in diesem Moment die Freigabegruppe leeren - und niemand erschiene mehr.
+- **Serienende:** `base.repeatUntil` ist ein reines Datum. `repeatId` ist das Intervall in Tagen (1, 7, 31, 365); jährliche Serien bekommen kein Ende, weil „bis 31.12.2027" an Heiligabend niemandem hilft.
+- **MAPPING_REVISION:** Steckt im Änderungs-Hash. Hochzählen, sobald sich die Übertragung in Contao-Felder ändert, sonst bekommen unveränderte Termine die neue Logik nie.
+- **`churchtools:check`** schreibt nichts und gibt Personen nur als ID aus, weil die Ausgabe gern in Tickets und Chats landet.

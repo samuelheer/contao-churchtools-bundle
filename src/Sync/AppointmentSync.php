@@ -311,6 +311,7 @@ class AppointmentSync
         $event->ctCalendarId = $appointment->calendarId;
         $event->ctConnection = $connection->id;
         $event->ctLink = $appointment->link ?? '';
+        $event->ctSeriesEnd = $appointment->seriesEnd?->getTimestamp() ?? 0;
         $event->ctHash = $hash;
         $event->ctSyncedAt = time();
 

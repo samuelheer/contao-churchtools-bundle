@@ -12,15 +12,60 @@ namespace SamuelHeer\ContaoChurchToolsBundle\EventListener;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
+use SamuelHeer\ContaoChurchToolsBundle\ChurchTools\ChurchToolsClient;
 use SamuelHeer\ContaoChurchToolsBundle\Connection\ConnectionRegistry;
+use SamuelHeer\ContaoChurchToolsBundle\Exception\ChurchToolsException;
 
 /**
  * Backend-Verhalten der Verbindungsverwaltung.
  */
 class ConnectionDcaListener
 {
-    public function __construct(private readonly ConnectionRegistry $registry)
+    public function __construct(
+        private readonly ConnectionRegistry $registry,
+        private readonly ChurchToolsClient $client,
+    ) {
+    }
+
+    /**
+     * Gruppen der Instanz mit Namen, damit niemand IDs nachschlagen muss.
+     *
+     * Ist ChurchTools nicht erreichbar oder das Token noch nicht gesetzt, bleibt
+     * die gespeicherte ID als Option erhalten. Sonst würde ein Speichern in genau
+     * diesem Moment die Freigabegruppe leeren - und dann erscheint niemand mehr.
+     *
+     * @return array<int, string>
+     */
+    #[AsCallback(table: 'tl_churchtools_connection', target: 'fields.publicPersonGroupId.options')]
+    #[AsCallback(table: 'tl_churchtools_connection', target: 'fields.imageReleaseGroupId.options')]
+    public function getGroups(DataContainer|null $dc = null): array
     {
+        $options = [];
+        $connection = $dc?->id ? $this->registry->find((int) $dc->id) : null;
+
+        if (null !== $connection) {
+            try {
+                foreach ($this->client->getGroups($connection) as $group) {
+                    if (isset($group['id'])) {
+                        $options[(int) $group['id']] = ($group['name'] ?? '').' ('.$group['id'].')';
+                    }
+                }
+            } catch (ChurchToolsException) {
+                // Fällt unten auf die gespeicherten Werte zurück.
+            }
+        }
+
+        natcasesort($options);
+
+        foreach (['publicPersonGroupId', 'imageReleaseGroupId'] as $field) {
+            $current = (int) ($dc?->activeRecord?->{$field} ?? 0);
+
+            if ($current > 0 && !isset($options[$current])) {
+                $options[$current] = \sprintf('Gruppe %d (Name nicht abrufbar)', $current);
+            }
+        }
+
+        return $options;
     }
 
     /**

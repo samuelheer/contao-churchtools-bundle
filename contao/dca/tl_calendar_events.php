@@ -40,6 +40,12 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ctHash'] = [
     'sql' => ['type' => 'string', 'length' => 32, 'default' => ''],
 ];
 
+// Letzter Tag der Serie als Zeitstempel (0 = Einzeltermin). Für Ausgaben wie
+// „Alpha-Kurs, ab 14. Januar, bis 18. März" in Listen, die Serien nur einmal zeigen.
+$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ctSeriesEnd'] = [
+    'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
+];
+
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ctSyncedAt'] = [
     'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
 ];

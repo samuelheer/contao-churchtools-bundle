@@ -29,6 +29,8 @@ final class Person
         public readonly string|null $mobile,
         /** @var list<string> alle Adressen der Person, Standardadresse zuerst */
         public readonly array $emails = [],
+        /** Archiviert oder verstorben - gehört nicht mehr auf die Website. */
+        public readonly bool $isInactive = false,
     ) {
     }
 
@@ -51,6 +53,9 @@ final class Person
             email: self::text($data['email'] ?? null),
             mobile: self::text($data['mobile'] ?? null),
             emails: self::emails($data),
+            isInactive: (bool) ($data['isArchived'] ?? false)
+                || (bool) ($data['isDead'] ?? false)
+                || !empty($data['dateOfDeath']),
         );
     }
 

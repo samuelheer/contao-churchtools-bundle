@@ -21,6 +21,7 @@ $GLOBALS['TL_LANG']['MSC']['churchtools_preview'] = [
     'more' => 'und %d weitere',
     'limitOne' => 'Es wird nur die erste Person der Rolle angezeigt.',
     'personHidden' => 'Die feste Person (ID %d) ist nicht freigegeben und erscheint nicht.',
+    'personInactive' => 'Die feste Person (ID %d) ist in ChurchTools archiviert oder verstorben und erscheint nicht.',
     'imageFieldOff' => '%s: ohne Bild - das Feld „Bild“ ist an der Verbindung nicht freigegeben.',
     'imageNotInGroup' => '%s: ohne Bild - nicht in der Bildfreigabegruppe %d.',
     'imageNoPhoto' => '%s: ohne Bild - in ChurchTools ist kein Foto hinterlegt.',
