@@ -14,6 +14,7 @@ use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Slug\Slug;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Psr\Log\LoggerInterface;
 use SamuelHeer\ContaoChurchToolsBundle\ChurchTools\ChurchToolsClient;
@@ -37,6 +38,12 @@ class AppointmentSync
      */
     private const WINDOW_PAST = '-1 month';
     private const WINDOW_FUTURE = '+12 months';
+
+    /**
+     * Hochzählen, wenn sich die Übertragung in Contao-Felder ändert.
+     * 2: Termin-Link immer als Ziel, neuer Tab nur für fremde Websites.
+     */
+    private const MAPPING_REVISION = 2;
 
     public function __construct(
         private readonly ChurchToolsClient $client,
@@ -238,7 +245,9 @@ class AppointmentSync
         SyncReport $report,
         bool $dryRun,
     ): void {
-        $hash = $appointment->contentHash();
+        // Die Revision gehört mit in den Hash: Ändert sich die Art, wie Felder
+        // übertragen werden, schreibt der nächste Lauf jeden Termin einmal neu.
+        $hash = md5($appointment->contentHash().'|'.self::MAPPING_REVISION);
         $isNew = null === $event;
 
         // Unverändert und veröffentlicht: nichts tun, damit der Cache ruhig bleibt.
@@ -284,14 +293,17 @@ class AppointmentSync
             $event->alias = $this->generateAlias($appointment, (int) $calendar->id);
         }
 
-        // Der Termin-Link ersetzt nur dann die Detailseite, wenn das am Kalender
-        // ausdrücklich gewünscht ist - sonst ginge der Flyer im Frontend verloren.
-        if ($appointment->link && $calendar->churchtoolsLinkAsSource) {
+        // Hat der Termin einen Link, ist das seine Zielseite (etwa eine eigene
+        // Kursseite). Ohne Link bleibt die Detailseite samt Flyer. Nur fremde
+        // Websites öffnen sich in einem neuen Tab.
+        if ($appointment->link) {
             $event->source = 'external';
             $event->url = $appointment->link;
-            $event->target = true;
+            $event->target = !$this->isOwnSite($appointment->link, $calendar);
         } else {
             $event->source = 'default';
+            $event->url = '';
+            $event->target = false;
         }
 
         $event->ctInstanceKey = $appointment->instanceKey();
@@ -391,6 +403,34 @@ class AppointmentSync
             static fn (string $part): string => '<p>'.nl2br(StringUtil::specialchars($part)).'</p>',
             $parts,
         ));
+    }
+
+    /**
+     * Zeigt der Link auf die Website, zu der der Kalender gehört?
+     *
+     * Maßgeblich ist die Domain der Startseite über der Leser-Seite des Kalenders.
+     * Relative Links gelten immer als eigene. Ein vorangestelltes „www." zählt
+     * nicht als Unterschied. Ohne Leser-Seite lässt sich die Domain nicht
+     * bestimmen - dann lieber ein neuer Tab als ein fremder Link im selben.
+     */
+    private function isOwnSite(string $link, CalendarModel $calendar): bool
+    {
+        $host = parse_url($link, PHP_URL_HOST);
+
+        if (!\is_string($host) || '' === $host) {
+            return true;
+        }
+
+        $page = $calendar->jumpTo ? PageModel::findWithDetails((int) $calendar->jumpTo) : null;
+        $ownHost = (string) ($page?->domain ?? '');
+
+        if ('' === $ownHost) {
+            return false;
+        }
+
+        $normalize = static fn (string $h): string => preg_replace('/^www\./', '', strtolower($h));
+
+        return $normalize($host) === $normalize($ownHost);
     }
 
     private function generateAlias(Appointment $appointment, int $calendarId): string

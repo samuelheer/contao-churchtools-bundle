@@ -94,7 +94,6 @@ Einen Contao-Kalender öffnen, Verbindung wählen, **speichern**, dann die gewü
 | ChurchTools-Kalender | Welche Kalender übernommen werden (Liste kommt aus der API) |
 | Nur Termine mit Tag | Optional: nur Termine mit mindestens einem der gewählten Tags (Liste kommt aus der API) |
 | Abgleich-Intervall | Stündlich, täglich oder nur manuell |
-| Termin-Link statt Detailseite | Ist am Termin ein Link hinterlegt, führt der Titel direkt dorthin |
 
 > **Wichtig:** Das Merkmal „öffentlich" am ChurchTools-Kalender taugt nicht als Filter - auch Putzpläne, Sitzungen und private Belegungen stehen dort auf öffentlich. Deshalb wird hier ausdrücklich ausgewählt.
 
@@ -105,6 +104,10 @@ Statt ganze Kalender zu übernehmen, kann die Terminpflege in ChurchTools entsch
 - Der Tag gilt für die ganze Serie, nicht für einzelne Instanzen.
 - Wird der Tag in ChurchTools entfernt, wird der Termin beim nächsten Abgleich deaktiviert.
 - Mit verschiedenen Tags lassen sich mehrere Contao-Kalender befüllen, etwa einer für die Startseite und einer für eine Familienseite.
+
+### Termin-Link als Zielseite
+
+Ist am Termin in ChurchTools ein **Link** hinterlegt, führt der Termin auf der Website dorthin statt auf die Detailseite - etwa auf eine eigene Kursseite. Ohne Link bleibt die Detailseite mit Flyer und Beschreibung. Links auf die eigene Website öffnen sich im selben Tab, fremde Websites in einem neuen. Die eigene Domain ergibt sich aus der Startseite über der Leser-Seite des Kalenders (*Weiterleitungsseite*); ohne Leser-Seite gilt jeder absolute Link als fremd.
 
 ### Serien nur einmal zeigen
 

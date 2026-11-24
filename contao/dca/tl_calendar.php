@@ -13,7 +13,7 @@ use Contao\CoreBundle\DataContainer\PaletteManipulator;
 PaletteManipulator::create()
     ->addLegend('churchtools_legend', 'title_legend', PaletteManipulator::POSITION_AFTER)
     ->addField(
-        ['churchtoolsConnection', 'churchtoolsCalendarIds', 'churchtoolsTagIds', 'churchtoolsSyncInterval', 'churchtoolsLinkAsSource'],
+        ['churchtoolsConnection', 'churchtoolsCalendarIds', 'churchtoolsTagIds', 'churchtoolsSyncInterval'],
         'churchtools_legend',
         PaletteManipulator::POSITION_APPEND,
     )
@@ -71,12 +71,6 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsLastSync'] = [
     'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
 ];
 
-$GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsLinkAsSource'] = [
-    'inputType' => 'checkbox',
-    'exclude' => true,
-    'eval' => ['tl_class' => 'clr'],
-    'sql' => ['type' => 'boolean', 'default' => false],
-];
 
 // Autor für importierte Termine - ohne Angabe bleibt das Feld leer.
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsAuthor'] = [
