@@ -74,12 +74,36 @@ class ChurchToolsClient
     }
 
     /**
+     * Alle Tags, die in der Instanz für Termine angelegt sind.
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    public function getAppointmentTags(Connection $connection): array
+    {
+        $data = $this->get($connection, '/api/tags/appointment');
+
+        $tags = [];
+
+        foreach ($data['data'] ?? [] as $tag) {
+            $tags[] = [
+                'id' => (int) $tag['id'],
+                'name' => (string) ($tag['name'] ?? ''),
+            ];
+        }
+
+        return $tags;
+    }
+
+    /**
      * Termine eines Kalenders im Zeitraum.
      *
      * Bewusst ein Aufruf je Kalender: Der Parameter calendar_ids[] wird von diesem
      * Endpunkt nachweislich ignoriert (geprüft gegen ChurchTools 3.135.1 - die Antwort
      * ist mit und ohne den Parameter identisch). Nebeneffekt: Die Kalenderzugehörigkeit
      * ist eindeutig, ohne sie aus der Antwort ableiten zu müssen.
+     *
+     * Tags liefert ChurchTools nur auf ausdrückliche Anforderung (include[]=tags,
+     * geprüft gegen 3.139.0). Sie stehen dann neben "base" in einem eigenen Feld.
      *
      * @return list<array<string, mixed>>
      */
@@ -88,6 +112,7 @@ class ChurchToolsClient
         $data = $this->get($connection, '/api/calendars/'.$calendarId.'/appointments', [
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
+            'include' => ['tags'],
         ]);
 
         return array_values($data['data'] ?? []);

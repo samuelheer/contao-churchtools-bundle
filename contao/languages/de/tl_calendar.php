@@ -11,6 +11,7 @@ declare(strict_types=1);
 $GLOBALS['TL_LANG']['tl_calendar']['churchtools_legend'] = 'ChurchTools';
 $GLOBALS['TL_LANG']['tl_calendar']['churchtoolsConnection'] = ['ChurchTools-Verbindung', 'Aus welcher Instanz die Termine kommen. Ist eine Verbindung gewählt, pflegt der Abgleich diesen Kalender - Änderungen von Hand werden dann überschrieben.'];
 $GLOBALS['TL_LANG']['tl_calendar']['churchtoolsCalendarIds'] = ['ChurchTools-Kalender', 'Welche Kalender übernommen werden. Die Liste kommt aus ChurchTools; nach dem Wechsel der Verbindung kurz speichern.'];
+$GLOBALS['TL_LANG']['tl_calendar']['churchtoolsTagIds'] = ['Nur Termine mit Tag', 'Ist ein Tag gewählt, kommen nur Termine mit mindestens einem dieser Tags auf die Website. Wird der Tag in ChurchTools entfernt, verschwindet der Termin beim nächsten Abgleich. Ohne Auswahl werden alle öffentlichen Termine übernommen.'];
 $GLOBALS['TL_LANG']['tl_calendar']['churchtoolsLinkAsSource'] = ['Termin-Link statt Detailseite', 'Ist am Termin ein Link hinterlegt, führt der Titel direkt dorthin. Ohne diese Option bleibt die Detailseite samt Flyer erhalten.'];
 $GLOBALS['TL_LANG']['tl_calendar']['churchtoolsAuthor'] = ['Autor importierter Termine', 'Wird bei automatisch angelegten Terminen eingetragen.'];
 

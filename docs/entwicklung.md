@@ -166,6 +166,14 @@ Der Parameter am appointments-Endpunkt hat keine Wirkung - die Antwort ist mit u
 
 Es steht auch bei internen Kalendern (Putzplan, Sitzungen, private Belegungen) auf `true`. Brauchbar ist stattdessen **`isInternal` am einzelnen Termin**. Kalender müssen im Backend ausdrücklich ausgewählt werden.
 
+### Tags kommen nur auf Anforderung - und stehen neben `base`
+
+Termin-Tags (seit ChurchTools 3.13x, `domainType` `appointment`) liefert der appointments-Endpunkt **nur mit `include[]=tags`**. Ohne den Parameter fehlt das Feld ganz; mit ihm steht es **neben** `base`, nicht darin, und ist bei Terminen ohne Tag `null` statt einer leeren Liste. Geprüft gegen 3.139.0. Symfonys `include[0]=tags` versteht ChurchTools genauso wie `include[]=tags`.
+
+Tags hängen an der Serie (`base.id`), nicht an der Instanz - eine Andacht mit Jahresserie trägt den Tag also in jedem Jahr.
+
+Die Liste aller Tags kommt von `GET /api/tags/appointment`. Bei der Umstellung eines bestehenden Kalenders auf Tag-Filter gilt: Was ohne Tag ist und im Zeitfenster liegt, wird deaktiviert; Termine **vor** dem Fenster bleiben wegen des Archivschutzes sichtbar und müssen bei Bedarf von Hand abgeschaltet werden.
+
 ### Bild-URLs sind öffentlich - und der Login-Header stört
 
 ```

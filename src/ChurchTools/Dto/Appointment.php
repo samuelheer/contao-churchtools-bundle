@@ -35,6 +35,8 @@ final class Appointment
         public readonly bool $allDay,
         public readonly bool $isInternal,
         public readonly ImageReference|null $image,
+        /** @var list<int> */
+        public readonly array $tagIds = [],
     ) {
     }
 
@@ -73,8 +75,19 @@ final class Appointment
             allDay: (bool) ($base['allDay'] ?? false),
             isInternal: (bool) ($base['isInternal'] ?? false),
             image: ImageReference::fromArray(\is_array($base['image'] ?? null) ? $base['image'] : null),
+            tagIds: self::tagIds($data['tags'] ?? null),
         );
         // Bewusst nicht übernommen: "note" - das ist das interne Notizfeld.
+    }
+
+    /**
+     * Trägt der Termin mindestens einen der Tags?
+     *
+     * @param list<int> $tagIds
+     */
+    public function hasAnyTag(array $tagIds): bool
+    {
+        return [] !== array_intersect($this->tagIds, $tagIds);
     }
 
     /**
@@ -114,6 +127,29 @@ final class Appointment
         // ChurchTools liefert UTC ("...Z"). Die Umrechnung in die lokale Zeitzone
         // übernimmt der Sync, damit Sommer- und Winterzeit korrekt greifen.
         return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+    }
+
+    /**
+     * Tags stehen neben "base", nicht darin, und kommen nur mit include[]=tags.
+     * Ohne Tags liefert ChurchTools null statt einer leeren Liste.
+     *
+     * @return list<int>
+     */
+    private static function tagIds(mixed $tags): array
+    {
+        if (!\is_array($tags)) {
+            return [];
+        }
+
+        $ids = [];
+
+        foreach ($tags as $tag) {
+            if (\is_array($tag) && isset($tag['id'])) {
+                $ids[] = (int) $tag['id'];
+            }
+        }
+
+        return $ids;
     }
 
     private static function text(mixed $value): string|null

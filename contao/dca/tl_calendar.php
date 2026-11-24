@@ -13,7 +13,7 @@ use Contao\CoreBundle\DataContainer\PaletteManipulator;
 PaletteManipulator::create()
     ->addLegend('churchtools_legend', 'title_legend', PaletteManipulator::POSITION_AFTER)
     ->addField(
-        ['churchtoolsConnection', 'churchtoolsCalendarIds', 'churchtoolsSyncInterval', 'churchtoolsLinkAsSource'],
+        ['churchtoolsConnection', 'churchtoolsCalendarIds', 'churchtoolsTagIds', 'churchtoolsSyncInterval', 'churchtoolsLinkAsSource'],
         'churchtools_legend',
         PaletteManipulator::POSITION_APPEND,
     )
@@ -41,6 +41,15 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsConnection'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsCalendarIds'] = [
+    'inputType' => 'checkbox',
+    'exclude' => true,
+    'eval' => ['multiple' => true, 'tl_class' => 'clr'],
+    'sql' => ['type' => 'blob', 'notnull' => false],
+];
+
+// Optionaler Filter: nur Termine mit einem dieser Tags. So entscheidet die
+// Terminpflege in ChurchTools, was auf die Website kommt - ohne eigene Kalender.
+$GLOBALS['TL_DCA']['tl_calendar']['fields']['churchtoolsTagIds'] = [
     'inputType' => 'checkbox',
     'exclude' => true,
     'eval' => ['multiple' => true, 'tl_class' => 'clr'],

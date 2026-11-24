@@ -115,6 +115,9 @@ class AppointmentSync
             return $report;
         }
 
+        // Ohne gewählte Tags gilt der Filter nicht - sonst bliebe der Kalender leer.
+        $tagIds = array_values(array_filter(array_map('intval', StringUtil::deserialize($calendar->churchtoolsTagIds, true))));
+
         $from ??= new \DateTimeImmutable(self::WINDOW_PAST);
         $to ??= new \DateTimeImmutable(self::WINDOW_FUTURE);
 
@@ -132,6 +135,13 @@ class AppointmentSync
                 // Interne Termine gelangen gar nicht erst in die Verarbeitung.
                 if ($appointment->isInternal) {
                     ++$report->skippedInternal;
+                    continue;
+                }
+
+                // Nimmt jemand den Tag in ChurchTools wieder ab, fällt der Termin
+                // hier heraus und wird unten wie ein gelöschter abgeschaltet.
+                if ([] !== $tagIds && !$appointment->hasAnyTag($tagIds)) {
+                    ++$report->skippedByTag;
                     continue;
                 }
 

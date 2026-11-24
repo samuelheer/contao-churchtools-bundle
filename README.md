@@ -92,10 +92,19 @@ Einen Contao-Kalender öffnen, Verbindung wählen, **speichern**, dann die gewü
 |---|---|
 | ChurchTools-Verbindung | Aus welcher Instanz die Termine kommen |
 | ChurchTools-Kalender | Welche Kalender übernommen werden (Liste kommt aus der API) |
+| Nur Termine mit Tag | Optional: nur Termine mit mindestens einem der gewählten Tags (Liste kommt aus der API) |
 | Abgleich-Intervall | Stündlich, täglich oder nur manuell |
 | Termin-Link statt Detailseite | Ist am Termin ein Link hinterlegt, führt der Titel direkt dorthin |
 
 > **Wichtig:** Das Merkmal „öffentlich" am ChurchTools-Kalender taugt nicht als Filter - auch Putzpläne, Sitzungen und private Belegungen stehen dort auf öffentlich. Deshalb wird hier ausdrücklich ausgewählt.
+
+### Website-Termine per Tag auswählen
+
+Statt ganze Kalender zu übernehmen, kann die Terminpflege in ChurchTools entscheiden, was auf die Website kommt: In ChurchTools einen Termin-Tag anlegen (etwa „Website"), ihn an die gewünschten Termine hängen und am Contao-Kalender unter **„Nur Termine mit Tag"** auswählen. Die ChurchTools-Kalender bleiben trotzdem anzukreuzen - sie geben vor, wo gesucht wird, der Tag filtert darin.
+
+- Der Tag gilt für die ganze Serie, nicht für einzelne Instanzen.
+- Wird der Tag in ChurchTools entfernt, wird der Termin beim nächsten Abgleich deaktiviert.
+- Mit verschiedenen Tags lassen sich mehrere Contao-Kalender befüllen, etwa einer für die Startseite und einer für eine Familienseite.
 
 Ein zugeordneter Kalender gehört ab dann dem Abgleich: Seine Termine sind im Backend schreibgeschützt, weil der nächste Lauf Handarbeit sonst stillschweigend überschreiben würde.
 
@@ -118,7 +127,7 @@ vendor/bin/contao-console churchtools:sync --from=2025-01-01 --to=2026-12-31
 
 ### Was der Abgleich tut
 
-- Übernommen wird jeder Termin, der **nicht als intern markiert** ist
+- Übernommen wird jeder Termin, der **nicht als intern markiert** ist - und, falls am Kalender Tags gewählt sind, mindestens einen davon trägt
 - **Gelöschtes wird deaktiviert, nicht gelöscht** - so leert ein API-Fehler nie den Kalender
 - Unveränderte Termine erzeugen **keine** Schreibvorgänge
 - Termine außerhalb des Zeitfensters bleiben unangetastet
