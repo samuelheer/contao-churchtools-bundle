@@ -106,6 +106,10 @@ Statt ganze Kalender zu übernehmen, kann die Terminpflege in ChurchTools entsch
 - Wird der Tag in ChurchTools entfernt, wird der Termin beim nächsten Abgleich deaktiviert.
 - Mit verschiedenen Tags lassen sich mehrere Contao-Kalender befüllen, etwa einer für die Startseite und einer für eine Familienseite.
 
+### Serien nur einmal zeigen
+
+ChurchTools liefert Serien aufgelöst, deshalb wird jeder Termin einer Serie ein eigener Contao-Termin. Für Flyer- oder Kartenreihen hat das Eventlisten-Modul die Option **„ChurchTools-Serien nur einmal zeigen"**: Von jeder Serie erscheint dann nur der nächste Termin. Von Hand angelegte Termine sind davon nicht betroffen.
+
 Ein zugeordneter Kalender gehört ab dann dem Abgleich: Seine Termine sind im Backend schreibgeschützt, weil der nächste Lauf Handarbeit sonst stillschweigend überschreiben würde.
 
 ## Abgleich
