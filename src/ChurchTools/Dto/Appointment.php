@@ -35,6 +35,10 @@ final class Appointment
         public readonly bool $allDay,
         public readonly bool $isInternal,
         public readonly ImageReference|null $image,
+        /** @var list<int> */
+        public readonly array $tagIds = [],
+        /** Letzter Tag der Serie, null bei Einzelterminen */
+        public readonly \DateTimeImmutable|null $seriesEnd = null,
     ) {
     }
 
@@ -73,8 +77,20 @@ final class Appointment
             allDay: (bool) ($base['allDay'] ?? false),
             isInternal: (bool) ($base['isInternal'] ?? false),
             image: ImageReference::fromArray(\is_array($base['image'] ?? null) ? $base['image'] : null),
+            tagIds: self::tagIds($data['tags'] ?? null),
+            seriesEnd: self::seriesEnd($base),
         );
         // Bewusst nicht übernommen: "note" - das ist das interne Notizfeld.
+    }
+
+    /**
+     * Trägt der Termin mindestens einen der Tags?
+     *
+     * @param list<int> $tagIds
+     */
+    public function hasAnyTag(array $tagIds): bool
+    {
+        return [] !== array_intersect($this->tagIds, $tagIds);
     }
 
     /**
@@ -106,6 +122,7 @@ final class Appointment
             $this->image?->filename,
             $this->image?->focusX,
             $this->image?->focusY,
+            $this->seriesEnd?->format('Y-m-d'),
         ]));
     }
 
@@ -114,6 +131,51 @@ final class Appointment
         // ChurchTools liefert UTC ("...Z"). Die Umrechnung in die lokale Zeitzone
         // übernimmt der Sync, damit Sommer- und Winterzeit korrekt greifen.
         return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+    }
+
+    /**
+     * Ende einer Serie als reines Datum („Kurs bis 18. März"). repeatUntil ist
+     * ein Kalendertag ohne Uhrzeit, deshalb ohne Zeitzonen-Umrechnung.
+     * repeatId ist das Intervall in Tagen (1 täglich, 7 wöchentlich, 31 monatlich).
+     *
+     * @param array<string, mixed> $base
+     */
+    private static function seriesEnd(array $base): \DateTimeImmutable|null
+    {
+        $until = $base['repeatUntil'] ?? null;
+
+        $repeat = (int) ($base['repeatId'] ?? 0);
+
+        // Jährliche Serien (repeatId 365, etwa Heiligabend) haben kein sinnvolles
+        // „bis" - sie erscheinen im Zeitfenster ohnehin nur einmal.
+        if ($repeat < 1 || $repeat >= 365 || !\is_string($until) || !preg_match('/^\d{4}-\d{2}-\d{2}/', $until)) {
+            return null;
+        }
+
+        return new \DateTimeImmutable(substr($until, 0, 10).' 00:00:00', new \DateTimeZone(date_default_timezone_get()));
+    }
+
+    /**
+     * Tags stehen neben "base", nicht darin, und kommen nur mit include[]=tags.
+     * Ohne Tags liefert ChurchTools null statt einer leeren Liste.
+     *
+     * @return list<int>
+     */
+    private static function tagIds(mixed $tags): array
+    {
+        if (!\is_array($tags)) {
+            return [];
+        }
+
+        $ids = [];
+
+        foreach ($tags as $tag) {
+            if (\is_array($tag) && isset($tag['id'])) {
+                $ids[] = (int) $tag['id'];
+            }
+        }
+
+        return $ids;
     }
 
     private static function text(mixed $value): string|null

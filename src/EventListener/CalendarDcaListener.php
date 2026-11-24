@@ -132,4 +132,35 @@ class CalendarDcaListener
 
         return $options;
     }
+
+    /**
+     * Termin-Tags der gewählten Instanz, mit Namen statt IDs.
+     *
+     * @return array<int, string>
+     */
+    #[AsCallback(table: 'tl_calendar', target: 'fields.churchtoolsTagIds.options')]
+    public function getChurchToolsTags(DataContainer|null $dc = null): array
+    {
+        $connection = $this->registry->find((int) ($dc?->activeRecord?->churchtoolsConnection ?? 0));
+
+        if (null === $connection) {
+            return [];
+        }
+
+        try {
+            $tags = $this->client->getAppointmentTags($connection);
+        } catch (ChurchToolsException) {
+            return [];
+        }
+
+        $options = [];
+
+        foreach ($tags as $tag) {
+            $options[$tag['id']] = $tag['name'];
+        }
+
+        natcasesort($options);
+
+        return $options;
+    }
 }

@@ -20,6 +20,7 @@ final class SyncReport
     public int $unchanged = 0;
     public int $disabled = 0;
     public int $skippedInternal = 0;
+    public int $skippedByTag = 0;
     public int $imagesImported = 0;
 
     /** @var list<string> */
@@ -45,6 +46,7 @@ final class SyncReport
         $this->unchanged += $other->unchanged;
         $this->disabled += $other->disabled;
         $this->skippedInternal += $other->skippedInternal;
+        $this->skippedByTag += $other->skippedByTag;
         $this->imagesImported += $other->imagesImported;
         $this->errors = [...$this->errors, ...$other->errors];
         $this->messages = [...$this->messages, ...$other->messages];
@@ -58,12 +60,13 @@ final class SyncReport
     public function summary(): string
     {
         return \sprintf(
-            'neu %d, geändert %d, unverändert %d, deaktiviert %d, intern übersprungen %d, Bilder %d, Fehler %d',
+            'neu %d, geändert %d, unverändert %d, deaktiviert %d, intern übersprungen %d, ohne Tag %d, Bilder %d, Fehler %d',
             $this->created,
             $this->updated,
             $this->unchanged,
             $this->disabled,
             $this->skippedInternal,
+            $this->skippedByTag,
             $this->imagesImported,
             \count($this->errors),
         );

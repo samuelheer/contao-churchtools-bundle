@@ -1,4 +1,4 @@
-<img src="https://img.shields.io/badge/maintained-yes-brightgreen" alt="maintained">
+<img src="https://img.shields.io/badge/status-vor%201.0-yellow" alt="Status: vor 1.0">
 <img src="https://img.shields.io/badge/license-LGPL--3.0--or--later-blue" alt="license">
 <img src="https://img.shields.io/badge/Contao-5.7%20LTS-orange" alt="Contao 5.7">
 <img src="https://img.shields.io/badge/PHP-%5E8.3-777bb4" alt="PHP 8.3">
@@ -7,18 +7,26 @@
 
 Bringt Termine samt Flyer und Personen aus [ChurchTools](https://church.tools) auf eine Contao-Website - ohne die Daten doppelt zu pflegen.
 
-Kompatibel mit **Contao 5.7 LTS** und **PHP ^8.3**. Ausschließlich Twig-Templates, damit der Wechsel auf Contao 6 nichts kostet. Verifiziert gegen ChurchTools 3.135.
+Kompatibel mit **Contao 5.7 LTS** und **PHP ^8.3**. Ausschließlich Twig-Templates, damit der Wechsel auf Contao 6 nichts kostet. Verifiziert gegen ChurchTools 3.135 bis 3.139.
 
 ## Funktionen
 
 - **Termin-Abgleich** aus beliebig vielen ChurchTools-Kalendern in ganz normale Contao-Events - Listen, Reader, Suche und Feeds funktionieren unverändert
+- **Auswahl per Tag**: Ein Termin-Tag in ChurchTools (etwa „Website") entscheidet, was auf die Website kommt
+- **Termin-Link als Zielseite**: Hat ein Termin eine eigene Seite, führt er dorthin; nur fremde Websites öffnen einen neuen Tab
+- **Serien nur einmal** in Listen, auf Wunsch mit Serienende („bis 18. März")
 - **Flyer** vom Termin werden mitgeholt, inklusive Fokuspunkt für sauberen Zuschnitt in Listenansichten
 - **Serien, Ausnahmen und Zusatztermine** werden korrekt abgebildet
 - **Personen** als Insert-Tag oder Inhaltselement - entweder fest gewählt oder als Rolle („die Leitung der Gruppe X"), die automatisch mitwechselt
 - **Personenauswahl per Namenssuche** im Backend statt per ID
 - **Inhaltselement „Termin-Flyer"**: zeigt die Flyer der nächsten Termine, vorbei ist vorbei
 - **Mandantenfähig** - mehrere Websites in einer Contao-Installation können auf verschiedene ChurchTools-Instanzen zugreifen
-- **Datenschutz eingebaut**: ausgeliefert wird nur, wer ausdrücklich freigegeben ist
+- **Datenschutz eingebaut**: ausgeliefert wird nur, wer ausdrücklich freigegeben ist - und nie, wer archiviert oder verstorben ist
+- **Diagnosebefehl** `churchtools:check` zeigt in einem Lauf, was eingerichtet ist und was nicht greift
+
+## Status
+
+Das Bundle ist bei einer Gemeinde im Einsatz und wird dort weiterentwickelt. Es steht noch vor Version 1.0: Einstellungen, Felder und Templates können sich zwischen kleineren Versionen ändern. Vor einem Update die Release-Notizen auf GitHub lesen und anschließend `contao:migrate` ausführen. Rückmeldungen und Fehlerberichte sind über die GitHub-Issues willkommen.
 
 Was das Bundle **nicht** tut: Es baut nichts nach, was ChurchTools bereits kann. E-Mail-Versand, Routinen, Follow-ups und Anmeldelogik bleiben dort.
 
@@ -29,7 +37,7 @@ composer require samuelheer/contao-churchtools-bundle
 vendor/bin/contao-console contao:migrate
 ```
 
-Alternativ über den Contao Manager nach `samuelheer/contao-churchtools-bundle` suchen.
+Das Paket liegt auf Packagist und lässt sich damit auch über den Contao Manager installieren (Suche nach `samuelheer/contao-churchtools-bundle`).
 
 ## Einrichtung
 
@@ -58,7 +66,7 @@ Backend → **System → ChurchTools-Verbindungen**
 | Adresse | Basis-URL, z. B. `https://example.church.tools` |
 | Name der Umgebungsvariablen | z. B. `CHURCHTOOLS_TOKEN_MAIN` - nicht das Token selbst |
 | Ordner für Bilder | Zielordner für importierte Flyer, z. B. `files/gemeinde/churchtools` |
-| Freigabegruppe für Personen | ID der Gruppe, die entscheidet, wer auf der Website erscheinen darf |
+| Freigabegruppe für Personen | Die Gruppe, die entscheidet, wer auf der Website erscheinen darf (Auswahl mit Namen; die Liste kommt nach dem ersten Speichern mit Token) |
 | Freigabegruppe für Bilder | optional. Leer: Das ChurchTools-Profilfoto erscheint bei jeder freigegebenen Person. Mit Gruppe: nur bei deren Mitgliedern |
 | Freigegebene Personenfelder | Welche Felder ChurchTools überhaupt verlassen |
 | Erlaubte E-Mail-Domains | z. B. `etg-scheppach.de` - dann erscheint nur eine Gemeinde-Adresse (auch eine weitere, nicht die Standardadresse), private nie. Leer: Standardadresse |
@@ -92,10 +100,32 @@ Einen Contao-Kalender öffnen, Verbindung wählen, **speichern**, dann die gewü
 |---|---|
 | ChurchTools-Verbindung | Aus welcher Instanz die Termine kommen |
 | ChurchTools-Kalender | Welche Kalender übernommen werden (Liste kommt aus der API) |
+| Nur Termine mit Tag | Optional: nur Termine mit mindestens einem der gewählten Tags (Liste kommt aus der API) |
 | Abgleich-Intervall | Stündlich, täglich oder nur manuell |
-| Termin-Link statt Detailseite | Ist am Termin ein Link hinterlegt, führt der Titel direkt dorthin |
 
 > **Wichtig:** Das Merkmal „öffentlich" am ChurchTools-Kalender taugt nicht als Filter - auch Putzpläne, Sitzungen und private Belegungen stehen dort auf öffentlich. Deshalb wird hier ausdrücklich ausgewählt.
+
+### Website-Termine per Tag auswählen
+
+Statt ganze Kalender zu übernehmen, kann die Terminpflege in ChurchTools entscheiden, was auf die Website kommt: In ChurchTools einen Termin-Tag anlegen (etwa „Website"), ihn an die gewünschten Termine hängen und am Contao-Kalender unter **„Nur Termine mit Tag"** auswählen. Die ChurchTools-Kalender bleiben trotzdem anzukreuzen - sie geben vor, wo gesucht wird, der Tag filtert darin.
+
+- Der Tag gilt für die ganze Serie, nicht für einzelne Instanzen.
+- Wird der Tag in ChurchTools entfernt, wird der Termin beim nächsten Abgleich deaktiviert.
+- Mit verschiedenen Tags lassen sich mehrere Contao-Kalender befüllen, etwa einer für die Startseite und einer für eine Familienseite.
+
+### Termin-Link als Zielseite
+
+Ist am Termin in ChurchTools ein **Link** hinterlegt, führt der Termin auf der Website dorthin statt auf die Detailseite - etwa auf eine eigene Kursseite. Ohne Link bleibt die Detailseite mit Flyer und Beschreibung. Links auf die eigene Website öffnen sich im selben Tab, fremde Websites in einem neuen. Die eigene Domain ergibt sich aus der Startseite über der Leser-Seite des Kalenders (*Weiterleitungsseite*); ohne Leser-Seite gilt jeder absolute Link als fremd.
+
+### Serien nur einmal zeigen
+
+ChurchTools liefert Serien aufgelöst, deshalb wird jeder Termin einer Serie ein eigener Contao-Termin. Für Flyer- oder Kartenreihen hat das Eventlisten-Modul die Option **„ChurchTools-Serien nur einmal zeigen"**: Von jeder Serie erscheint dann nur der nächste Termin. Von Hand angelegte Termine sind davon nicht betroffen.
+
+Damit trotzdem erkennbar ist, wie lange eine Serie läuft, steht das Serienende in jedem importierten Termin als Feld `ctSeriesEnd` (Zeitstempel, 0 bei Einzelterminen). In einem Twig-Event-Template etwa so:
+
+```twig
+{% if ctSeriesEnd > startTime %}bis {{ ctSeriesEnd|date('d.m.') }}{% endif %}
+```
 
 Ein zugeordneter Kalender gehört ab dann dem Abgleich: Seine Termine sind im Backend schreibgeschützt, weil der nächste Lauf Handarbeit sonst stillschweigend überschreiben würde.
 
@@ -118,7 +148,7 @@ vendor/bin/contao-console churchtools:sync --from=2025-01-01 --to=2026-12-31
 
 ### Was der Abgleich tut
 
-- Übernommen wird jeder Termin, der **nicht als intern markiert** ist
+- Übernommen wird jeder Termin, der **nicht als intern markiert** ist - und, falls am Kalender Tags gewählt sind, mindestens einen davon trägt
 - **Gelöschtes wird deaktiviert, nicht gelöscht** - so leert ein API-Fehler nie den Kalender
 - Unveränderte Termine erzeugen **keine** Schreibvorgänge
 - Termine außerhalb des Zeitfensters bleiben unangetastet
@@ -158,6 +188,7 @@ Darstellungen: `card`, `inline`, `contact`, `list`. Die Templates liegen unter `
 Das Bundle ist hier absichtlich streng:
 
 - **Personendaten werden nicht in die Contao-Datenbank gespiegelt**, sondern bei Bedarf geholt und kurz zwischengespeichert
+- **Archivierte und verstorbene Personen erscheinen nie**, auch wenn sie noch in der Freigabegruppe stehen. `churchtools:check` listet solche Einträge, damit man die Gruppe aufräumen kann
 - **Ausgeliefert wird nur, wer in der Freigabegruppe steht.** Ohne konfigurierte Gruppe erscheint niemand - eine fehlende Einstellung gilt nicht als Vollfreigabe. Das greift auch, wenn eine Personen-ID direkt in einem Insert-Tag steht
 - **Nur ausgewählte Felder** verlassen ChurchTools; E-Mail und Telefon sind voreingestellt aus. Mit „Erlaubte E-Mail-Domains" lässt sich die E-Mail zusätzlich auf Gemeinde-Adressen begrenzen
 - **Bilder** - gezeigt wird ausschließlich das Profilfoto, das die Person selbst in ChurchTools hinterlegt hat, und nur bei freigegebenen Personen. Wer es hochlädt und in die Veröffentlichung einwilligt, zeigt es bewusst. Optional lässt sich das Foto zusätzlich an eine Bildfreigabegruppe binden
@@ -173,7 +204,9 @@ Ist ChurchTools nicht erreichbar, bleibt die Website vollständig: Termine liege
 | Symptom | Ursache und Lösung |
 |---|---|
 | Übersicht meldet „Umgebungsvariable fehlt" | Die in der Verbindung genannte Variable ist nicht gesetzt. Nach dem Eintragen in `.env.local` den Cache leeren. |
-| Abgleich meldet „ChurchTools ist nicht erreichbar" | Basis-URL prüfen (ohne abschließenden Schrägstrich) und ob das Token noch gültig ist. `churchtools:person` zeigt beides an. |
+| Irgendetwas fehlt, unklar was | `vendor/bin/contao-console churchtools:check` - prüft Zugang, Freigabegruppen, Personen-Elemente, Kalender, Tags und macht einen Probelauf des Abgleichs. |
+| Abgleich meldet „ChurchTools ist nicht erreichbar" | Basis-URL prüfen (ohne abschließenden Schrägstrich) und ob das Token noch gültig ist. `churchtools:check` zeigt beides an. |
+| Alle Termine sind plötzlich weg | Ist am Kalender ein Tag-Filter gesetzt, den es in ChurchTools nicht mehr gibt? `churchtools:check` meldet das als Fehler. |
 | Kalenderliste im Backend bleibt leer | Verbindung wählen und **speichern** - die Liste wird erst danach von der API geholt. |
 | Termine kommen, aber ohne Flyer | Hat der Termin in ChurchTools ein Bild? Der Bericht des Abgleichs nennt die Ursache je Termin. |
 | Person erscheint nicht auf der Website | `vendor/bin/contao-console churchtools:person <ID>` - meist fehlt der Eintrag in der Freigabegruppe. |
@@ -185,6 +218,7 @@ Ist ChurchTools nicht erreichbar, bleibt die Website vollständig: Termine liege
 
 | Befehl | Zweck |
 |---|---|
+| `churchtools:check` | Gesamtcheck aller Verbindungen, mit `--connection=<ID>`, `--skip-sync` (ohne Probelauf). Nennt Personen nur mit ID |
 | `churchtools:sync` | Termine abgleichen, mit `--dry-run`, `--from`, `--to` |
 | `churchtools:person <ID>` | Prüft Freigabe und zeigt, welche Felder ausgeliefert würden |
 | `churchtools:person --search=<Name>` | Personensuche wie im Backend-Auswahlfeld |

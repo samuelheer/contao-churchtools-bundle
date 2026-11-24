@@ -148,6 +148,8 @@ class PersonController extends AbstractContentElementController
 
         if ($personId > 0 && !\in_array($personId, $released, true)) {
             $notes[] = ['level' => 'warning', 'text' => $t('personHidden', $personId)];
+        } elseif ($personId > 0 && null === $this->personProvider->get($connection, $personId)) {
+            $notes[] = ['level' => 'warning', 'text' => $t('personInactive', $personId)];
         }
 
         foreach ($people as $person) {

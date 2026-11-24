@@ -36,7 +36,12 @@ class PersonProvider
     }
 
     /**
-     * Eine einzelne Person, sofern sie freigegeben ist.
+     * Eine einzelne Person, sofern sie freigegeben ist und noch aktiv.
+     *
+     * Archivierte und verstorbene Personen bleiben oft noch in Gruppen stehen,
+     * auch in der Freigabegruppe. Die Freigabe allein reicht deshalb nicht.
+     * Weil alle Ausgabewege (Insert-Tag, Inhaltselement, Gruppenauflösung,
+     * Profilfoto) hier vorbeikommen, genügt die Prüfung an dieser Stelle.
      */
     public function get(Connection $connection, int $personId): Person|null
     {
@@ -44,7 +49,9 @@ class PersonProvider
             return null;
         }
 
-        return $this->fetch($connection, $personId);
+        $person = $this->fetch($connection, $personId);
+
+        return null !== $person && !$person->isInactive ? $person : null;
     }
 
     /**

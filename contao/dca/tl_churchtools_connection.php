@@ -81,15 +81,15 @@ $GLOBALS['TL_DCA']['tl_churchtools_connection'] = [
             'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
         ],
         'publicPersonGroupId' => [
-            'inputType' => 'text',
+            'inputType' => 'select',
             'exclude' => true,
-            'eval' => ['rgxp' => 'natural', 'maxlength' => 10, 'tl_class' => 'w50'],
+            'eval' => ['includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'],
             'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
         ],
         'imageReleaseGroupId' => [
-            'inputType' => 'text',
+            'inputType' => 'select',
             'exclude' => true,
-            'eval' => ['rgxp' => 'natural', 'maxlength' => 10, 'tl_class' => 'w50'],
+            'eval' => ['includeBlankOption' => true, 'chosen' => true, 'tl_class' => 'w50'],
             'sql' => ['type' => 'integer', 'unsigned' => true, 'default' => 0],
         ],
         'personFields' => [
